@@ -35,6 +35,17 @@ public abstract class Seq<T> extends IterableExt<T> {
         return (Seq<T>)EmptySeq.INSTANCE;
     }
 
+
+    public static <T> Seq<T> of(Consumer<Yield<T>> yieldConsumer) {
+        return of(10, yieldConsumer);
+    }
+
+    public static <T> Seq<T> of(int batchSize, Consumer<Yield<T>> yieldConsumer) {
+        Yield<T> yield = new Yield<>(batchSize);
+        yieldConsumer.accept(yield);
+        return Seq.of(yield.list).flatMap(it -> it);
+    }
+
     public static <T> Seq<T> gen(Supplier<T> supplier) {
         return of(() -> new Iterator<T>() {
             private T next;
