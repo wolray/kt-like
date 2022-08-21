@@ -92,11 +92,7 @@ public class Grouping<T, K> {
         Map<K, C> map = makeMap();
         for (T t : iterable) {
             K k = function.apply(t);
-            C e = map.get(k);
-            if (e == null) {
-                e = supplier.get();
-                map.put(k, e);
-            }
+            C e = map.computeIfAbsent(k, it -> supplier.get());
             consumer.accept(e, t);
         }
         return map;

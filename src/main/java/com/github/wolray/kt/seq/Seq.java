@@ -125,6 +125,10 @@ public abstract class Seq<T> extends IterableExt<T> {
         });
     }
 
+    public <E> E let(Function<Seq<T>, E> function) {
+        return function.apply(this);
+    }
+
     public <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
         return of(() -> new FlatIterator<>(iterator(), function));
     }
