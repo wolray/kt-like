@@ -35,7 +35,6 @@ public abstract class Seq<T> extends IterableExt<T> {
         return (Seq<T>)EmptySeq.INSTANCE;
     }
 
-
     public static <T> Seq<T> of(Consumer<Yield<T>> yieldConsumer) {
         return of(10, yieldConsumer);
     }
@@ -43,45 +42,19 @@ public abstract class Seq<T> extends IterableExt<T> {
     public static <T> Seq<T> of(int batchSize, Consumer<Yield<T>> yieldConsumer) {
         Yield<T> yield = new Yield<>(batchSize);
         yieldConsumer.accept(yield);
-        return Seq.of(yield.list);
+        return of(yield.list);
+    }
+
+    public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
+        return of(() -> PickIterator.toIterator(() -> seed, operator));
+    }
+
+    public static <T> Seq<T> gen(Supplier<T> seed, UnaryOperator<T> operator) {
+        return of(() -> PickIterator.toIterator(seed, operator));
     }
 
     public static <T> Seq<T> gen(Supplier<T> supplier) {
-        return of(() -> new Iterator<T>() {
-            private T next;
-            private int state = -1;
-
-            private void computeNext() {
-                next = supplier.get();
-                if (next != null) {
-                    state = 1;
-                    return;
-                }
-                state = 0;
-            }
-
-            @Override
-            public boolean hasNext() {
-                if (state == -1) {
-                    computeNext();
-                }
-                return state == 1;
-            }
-
-            @Override
-            public T next() {
-                if (state == -1) {
-                    computeNext();
-                }
-                if (state == 1) {
-                    T res = next;
-                    next = null;
-                    state = -1;
-                    return res;
-                }
-                throw new NoSuchElementException();
-            }
-        });
+        return of(() -> PickIterator.toIterator(supplier));
     }
 
     @Override
@@ -105,16 +78,8 @@ public abstract class Seq<T> extends IterableExt<T> {
         });
     }
 
-    private Seq<T> stateful(boolean checkOnce, PickIterator.State afterPick, Predicate<T> predicate) {
-        return of(() -> new PickIterator<>(iterator(), checkOnce, afterPick, predicate));
-    }
-
-    private Seq<T> takeIf(boolean checkOnce, Predicate<T> predicate) {
-        return stateful(checkOnce, PickIterator.State.Unset, predicate);
-    }
-
     public Seq<T> filter(Predicate<T> predicate) {
-        return takeIf(false, predicate);
+        return of(() -> PickIterator.filter(iterator(), predicate));
     }
 
     public Seq<T> filterNotNull() {
@@ -132,7 +97,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> takeWhile(Predicate<T> predicate) {
-        return takeIf(true, predicate);
+        return of(() -> PickIterator.takeWhile(iterator(), predicate));
     }
 
     public Seq<T> take(int n) {
@@ -150,7 +115,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> dropWhile(Predicate<T> predicate) {
-        return stateful(false, PickIterator.State.Done, predicate.negate());
+        return of(() -> PickIterator.dropWhile(iterator(), predicate));
     }
 
     public Seq<T> onEach(Consumer<T> consumer) {

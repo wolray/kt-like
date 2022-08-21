@@ -2,14 +2,17 @@ package com.github.wolray.kt.seq;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * @author wolray
  */
 public class PickIterator<T> implements Iterator<T> {
     private final Iterator<T> iterator;
-    private final Runnable computeNext;
+    private final Supplier<State> computeNext;
     private final State afterPick;
     private final Predicate<T> predicate;
     private State state = State.Unset;
@@ -22,29 +25,74 @@ public class PickIterator<T> implements Iterator<T> {
         this.predicate = predicate;
     }
 
-    private void computeNextOnce() {
+    private static <T> Iterator<T> takeIf(Iterator<T> source, boolean checkOnce, Predicate<T> predicate) {
+        return new PickIterator<>(source, checkOnce, State.Unset, predicate);
+    }
+
+    public static <T> Iterator<T> filter(Iterator<T> source, Predicate<T> predicate) {
+        return takeIf(source, false, predicate);
+    }
+
+    public static <T> Iterator<T> takeWhile(Iterator<T> source, Predicate<T> predicate) {
+        return takeIf(source, true, predicate);
+    }
+
+    public static <T> Iterator<T> dropWhile(Iterator<T> source, Predicate<T> predicate) {
+        return new PickIterator<>(source, false, State.Done, predicate.negate());
+    }
+
+    public static <T> Iterator<T> toIterator(Supplier<T> seed, UnaryOperator<T> operator) {
+        Box<T> box = new Box<>();
+        return toIterator(() -> {
+            if (box.state == State.Unset) {
+                box.state = State.Cached;
+                return box.item = seed.get();
+            } else {
+                return box.item = operator.apply(box.item);
+            }
+        });
+    }
+
+    public static <T> Iterator<T> toIterator(Supplier<T> supplier) {
+        return takeWhile(endless(supplier), Objects::nonNull);
+    }
+
+    private static <T> Iterator<T> endless(Supplier<T> supplier) {
+        return new Iterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return true;
+            }
+
+            @Override
+            public T next() {
+                return supplier.get();
+            }
+        };
+    }
+
+    private State computeNextOnce() {
         if (iterator.hasNext()) {
             if (nextItem()) {
-                return;
+                return State.Cached;
             }
         }
-        state = State.Done;
+        return State.Done;
     }
 
-    private void computeNextUntil() {
+    private State computeNextUntil() {
         while (iterator.hasNext()) {
             if (nextItem()) {
-                return;
+                return State.Cached;
             }
         }
-        state = State.Done;
+        return State.Done;
     }
 
-    boolean nextItem() {
+    private boolean nextItem() {
         T t = iterator.next();
         if (predicate.test(t)) {
             next = t;
-            state = State.Cached;
             return true;
         }
         return false;
@@ -53,7 +101,7 @@ public class PickIterator<T> implements Iterator<T> {
     @Override
     public boolean hasNext() {
         if (state == State.Unset) {
-            computeNext.run();
+            state = computeNext.get();
         }
         if (state == State.Cached) {
             return true;
@@ -64,7 +112,7 @@ public class PickIterator<T> implements Iterator<T> {
     @Override
     public T next() {
         if (state == State.Unset) {
-            computeNext.run();
+            state = computeNext.get();
         }
         if (state == State.Cached) {
             T res = next;
@@ -82,5 +130,10 @@ public class PickIterator<T> implements Iterator<T> {
         Unset,
         Done,
         Cached
+    }
+
+    private static class Box<T> {
+        T item;
+        State state = State.Unset;
     }
 }

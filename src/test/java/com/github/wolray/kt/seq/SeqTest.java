@@ -2,6 +2,7 @@ package com.github.wolray.kt.seq;
 
 import org.junit.Test;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -20,5 +21,12 @@ public class SeqTest {
         System.out.println(seq.take(5).drop(2));
         System.out.println(Seq.gen(() -> 1).take(4));
         System.out.println(Seq.gen(() -> 1).take(5));
+    }
+
+    @Test
+    public void testBatchList() {
+        Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
+        List<Integer> list = seq.toBatchList(5);
+        System.out.println(list);
     }
 }

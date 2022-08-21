@@ -110,6 +110,18 @@ public abstract class IterableExt<T> implements Iterable<T> {
         return toCollection(new ArrayList<>(sizeOrDefault()));
     }
 
+    public List<T> toSinglyList() {
+        return toCollection(new SinglyList<>());
+    }
+
+    public List<T> toBatchList() {
+        return toCollection(new BatchList<>());
+    }
+
+    public List<T> toBatchList(int batchSize) {
+        return toCollection(new BatchList<>(batchSize));
+    }
+
     public <C extends Collection<T>> C toCollection(C des) {
         return foldBy(des, Collection::add);
     }
@@ -142,8 +154,8 @@ public abstract class IterableExt<T> implements Iterable<T> {
     }
 
     public Pair<List<T>, List<T>> partition(Predicate<T> predicate) {
-        List<T> trueList = new ArrayList<>();
-        List<T> falseList = new ArrayList<>();
+        List<T> trueList = new BatchList<>();
+        List<T> falseList = new BatchList<>();
         for (T t : this) {
             if (predicate.test(t)) {
                 trueList.add(t);

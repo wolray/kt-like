@@ -3,20 +3,23 @@ package com.github.wolray.kt.seq;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * @author wolray
  */
 public class BatchList<T> extends AbstractList<T> {
-    private final LinkedList<ArrayList<T>> list = new LinkedList<>();
-    private final int batchSize;
-    private int mod;
-    private int size;
-    private ArrayList<T> cur;
+    private transient final SinglyList<ArrayList<T>> list = new SinglyList<>();
+    private transient final int batchSize;
+    private transient int mod;
+    private transient int size;
+    private transient ArrayList<T> cur;
+
+    public BatchList() {
+        this(10);
+    }
 
     public BatchList(int batchSize) {
-        this.batchSize = batchSize;
+        this.batchSize = mod = batchSize;
     }
 
     @Override
