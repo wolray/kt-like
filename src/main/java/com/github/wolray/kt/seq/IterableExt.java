@@ -234,6 +234,10 @@ public abstract class IterableExt<T> implements Iterable<T> {
         return iterator.hasNext() ? iterator.next() : null;
     }
 
+    public T firstNotNull() {
+        return first(Objects::nonNull);
+    }
+
     public T first(Predicate<T> predicate) {
         for (T t : this) {
             if (predicate.test(t)) {
