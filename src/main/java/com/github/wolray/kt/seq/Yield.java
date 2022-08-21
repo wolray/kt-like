@@ -1,31 +1,19 @@
 package com.github.wolray.kt.seq;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * @author wolray
  */
 public class Yield<T> {
-    final LinkedList<ArrayList<T>> list = new LinkedList<>();
-    private final int batchSize;
-    private ArrayList<T> cur;
-    private int mod;
+    final BatchList<T> list;
 
-    public Yield(int batchSize) {
-        this.batchSize = batchSize;
-        mod = batchSize;
+    Yield(int batchSize) {
+        list = new BatchList<>(batchSize);
     }
 
     public void yield(T t) {
-        if (mod == batchSize) {
-            mod = 0;
-            cur = new ArrayList<>(batchSize);
-            list.add(cur);
-        }
-        cur.add(t);
-        mod++;
+        list.add(t);
     }
 
     public void yieldAll(Iterable<T> iterable) {
