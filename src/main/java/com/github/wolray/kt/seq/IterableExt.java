@@ -21,7 +21,7 @@ public abstract class IterableExt<T> implements Iterable<T> {
 
     public T get(int index) {
         if (index < 0 || size != null && index >= size) {
-            throw new IndexOutOfBoundsException();
+            throw new IndexOutOfBoundsException(Integer.toString(index));
         }
         for (T t : this) {
             if (index-- == 0) {

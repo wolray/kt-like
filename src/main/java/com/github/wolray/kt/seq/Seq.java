@@ -1,10 +1,7 @@
 package com.github.wolray.kt.seq;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 
 /**
  * @author wolray
@@ -38,8 +35,42 @@ public abstract class Seq<T> extends IterableExt<T> {
         return (Seq<T>)EmptySeq.INSTANCE;
     }
 
-    static class EmptySeq {
-        static final Seq<Object> INSTANCE = of(Collections::emptyIterator);
+    public static <T> Seq<T> gen(Supplier<T> supplier) {
+        return of(() -> new Iterator<T>() {
+            private T next;
+            private int state = -1;
+
+            private void computeNext() {
+                next = supplier.get();
+                if (next != null) {
+                    state = 1;
+                    return;
+                }
+                state = 0;
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (state == -1) {
+                    computeNext();
+                }
+                return state == 1;
+            }
+
+            @Override
+            public T next() {
+                if (state == -1) {
+                    computeNext();
+                }
+                if (state == 1) {
+                    T res = next;
+                    next = null;
+                    state = -1;
+                    return res;
+                }
+                throw new NoSuchElementException();
+            }
+        });
     }
 
     @Override
@@ -148,16 +179,6 @@ public abstract class Seq<T> extends IterableExt<T> {
         });
     }
 
-    public static class IndexedValue<T> {
-        public final int index;
-        public final T value;
-
-        public IndexedValue(int index, T value) {
-            this.index = index;
-            this.value = value;
-        }
-    }
-
     public <E> Seq<Pair<T, E>> zip(Iterable<E> es) {
         return SeqScope.INSTANCE.zip(this, es);
     }
@@ -168,5 +189,19 @@ public abstract class Seq<T> extends IterableExt<T> {
 
     public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
         return SeqScope.INSTANCE.zip(this, bs, cs);
+    }
+
+    static class EmptySeq {
+        static final Seq<Object> INSTANCE = of(Collections::emptyIterator);
+    }
+
+    public static class IndexedValue<T> {
+        public final int index;
+        public final T value;
+
+        public IndexedValue(int index, T value) {
+            this.index = index;
+            this.value = value;
+        }
     }
 }
