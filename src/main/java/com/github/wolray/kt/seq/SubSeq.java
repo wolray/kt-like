@@ -10,16 +10,17 @@ public class SubSeq<T> extends Seq<T> {
     private final Seq<T> seq;
     private final int start;
     private final Integer end;
-    private final Integer size;
 
     SubSeq(Seq<T> seq, int start, Integer end) {
         this.seq = seq;
         this.start = start;
         this.end = end;
-        size = end != null ? end - start : null;
+        if (end != null) {
+            size = end - start;
+        }
     }
 
-    private boolean checkRange(int n) {
+    private boolean outRange(int n) {
         return size != null && n >= size;
     }
 
@@ -28,7 +29,7 @@ public class SubSeq<T> extends Seq<T> {
         if (n <= 0) {
             return this;
         }
-        return checkRange(n) ? Seq.empty() : new SubSeq<>(this, start + n, end);
+        return outRange(n) ? Seq.empty() : new SubSeq<>(this, start + n, end);
     }
 
     @Override
@@ -36,7 +37,7 @@ public class SubSeq<T> extends Seq<T> {
         if (n <= 0) {
             return Seq.empty();
         }
-        return checkRange(n) ? this : new SubSeq<>(this, start, start + n);
+        return outRange(n) ? this : new SubSeq<>(this, start, start + n);
     }
 
     @Override
