@@ -125,12 +125,24 @@ public abstract class Seq<T> extends IterableExt<T> {
         });
     }
 
+    public Seq<T> cache() {
+        return cache(IterableExt::toBatchList);
+    }
+
+    public Seq<T> cache(int batchSize) {
+        return cache(it -> it.toBatchList(batchSize));
+    }
+
+    public Seq<T> cache(Function<Seq<T>, List<T>> byList) {
+        return size != null ? this : Seq.of(byList.apply(this));
+    }
+
     public <E> E let(Function<Seq<T>, E> function) {
         return function.apply(this);
     }
 
     public <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
-        return of(() -> new FlatIterator<>(iterator(), function));
+        return of(() -> new FlatIterator<>(map(function).iterator()));
     }
 
     public Seq<T> append(Iterable<T> seq) {

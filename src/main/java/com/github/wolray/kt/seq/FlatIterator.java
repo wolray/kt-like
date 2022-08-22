@@ -7,14 +7,12 @@ import java.util.function.Function;
 /**
  * @author wolray
  */
-public class FlatIterator<T, R> implements Iterator<R> {
+public class FlatIterator<R, T extends Iterable<R>> implements Iterator<R> {
     private final Iterator<T> iterator;
-    private final Function<T, Iterable<R>> function;
     private Iterator<R> cur;
 
-    public FlatIterator(Iterator<T> iterator, Function<T, Iterable<R>> function) {
+    public FlatIterator(Iterator<T> iterator) {
         this.iterator = iterator;
-        this.function = function;
     }
 
     @Override
@@ -39,7 +37,7 @@ public class FlatIterator<T, R> implements Iterator<R> {
                 return false;
             } else {
                 T t = iterator.next();
-                Iterator<R> itr = function.apply(t).iterator();
+                Iterator<R> itr = t.iterator();
                 if (itr.hasNext()) {
                     cur = itr;
                     return true;
