@@ -62,6 +62,13 @@ public abstract class Seq<T> extends IterableExt<T> {
         return join("=>", String::valueOf);
     }
 
+    public <S, E> Seq<E> map(Supplier<S> stateSupplier, BiFunction<S, T, E> function) {
+        return of(() -> {
+            S s = stateSupplier.get();
+            return map(it -> function.apply(s, it)).iterator();
+        });
+    }
+
     public <E> Seq<E> map(Function<T, E> function) {
         return of(() -> new Iterator<E>() {
             Iterator<T> iterator = iterator();
@@ -118,6 +125,10 @@ public abstract class Seq<T> extends IterableExt<T> {
         return of(() -> PickIterator.dropWhile(iterator(), predicate));
     }
 
+    public <E> Seq<E> runningFold(E init, BiFunction<E, T, E> function) {
+        return map(() -> StateBox.ofItem(init), (b, it) -> b.item = function.apply(b.item, it));
+    }
+
     public Seq<T> onEach(Consumer<T> consumer) {
         return map(it -> {
             consumer.accept(it);
@@ -134,7 +145,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> cache(Function<Seq<T>, List<T>> byList) {
-        return size != null ? this : Seq.of(byList.apply(this));
+        return size != null ? this : of(byList.apply(this));
     }
 
     public <E> E let(Function<Seq<T>, E> function) {
@@ -155,20 +166,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<IndexedValue<T>> withIndex() {
-        return of(() -> new Iterator<IndexedValue<T>>() {
-            Iterator<T> iterator = iterator();
-            int index = 0;
-
-            @Override
-            public boolean hasNext() {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public IndexedValue<T> next() {
-                return new IndexedValue<>(index++, iterator.next());
-            }
-        });
+        return map(() -> new int[1], (a, it) -> new IndexedValue<>(a[0]++, it));
     }
 
     public <E> Seq<Pair<T, E>> zip(Iterable<E> es) {

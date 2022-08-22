@@ -42,7 +42,7 @@ public class PickIterator<T> implements Iterator<T> {
     }
 
     public static <T> Iterator<T> toIterator(Supplier<T> seed, UnaryOperator<T> operator) {
-        Box<T> box = new Box<>();
+        StateBox<T, State> box = StateBox.ofState(State.Unset);
         return toIterator(() -> {
             if (box.state == State.Unset) {
                 box.state = State.Cached;
@@ -130,10 +130,5 @@ public class PickIterator<T> implements Iterator<T> {
         Unset,
         Done,
         Cached
-    }
-
-    private static class Box<T> {
-        T item;
-        State state = State.Unset;
     }
 }
