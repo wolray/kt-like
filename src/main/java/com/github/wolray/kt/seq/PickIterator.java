@@ -2,10 +2,8 @@ package com.github.wolray.kt.seq;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 /**
  * @author wolray
@@ -39,36 +37,6 @@ public class PickIterator<T> implements Iterator<T> {
 
     public static <T> Iterator<T> dropWhile(Iterator<T> source, Predicate<T> predicate) {
         return new PickIterator<>(source, false, State.Done, predicate.negate());
-    }
-
-    public static <T> Iterator<T> toIterator(Supplier<T> seed, UnaryOperator<T> operator) {
-        StateBox<T, State> box = StateBox.ofState(State.Unset);
-        return toIterator(() -> {
-            if (box.state == State.Unset) {
-                box.state = State.Cached;
-                return box.item = seed.get();
-            } else {
-                return box.item = operator.apply(box.item);
-            }
-        });
-    }
-
-    public static <T> Iterator<T> toIterator(Supplier<T> supplier) {
-        return takeWhile(endless(supplier), Objects::nonNull);
-    }
-
-    private static <T> Iterator<T> endless(Supplier<T> supplier) {
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return true;
-            }
-
-            @Override
-            public T next() {
-                return supplier.get();
-            }
-        };
     }
 
     private State computeNextOnce() {

@@ -9,16 +9,20 @@ import java.util.function.*;
 public abstract class Seq<T> extends IterableExt<T> {
     public static <T> Seq<T> of(Iterable<T> iterable) {
         if (iterable instanceof Seq<?>) {
-            return ((Seq<T>)iterable);
+            return (Seq<T>)iterable;
         }
-        Seq<T> seq = new Seq<T>() {
+        Seq<T> seq = convert(iterable);
+        seq.setSize(iterable);
+        return seq;
+    }
+
+    static <T> Seq<T> convert(Iterable<T> iterable) {
+        return new Seq<T>() {
             @Override
             public Iterator<T> iterator() {
                 return iterable.iterator();
             }
         };
-        seq.setSize(iterable);
-        return seq;
     }
 
     @SafeVarargs
@@ -45,16 +49,22 @@ public abstract class Seq<T> extends IterableExt<T> {
         return of(yield.list);
     }
 
+    public static <T> Seq<T> gen(boolean untilNull, Supplier<T> supplier) {
+        return convert(() -> {
+            Iterator<T> iterator = EndlessIterator.of(supplier);
+            if (untilNull) {
+                return PickIterator.takeWhile(iterator, Objects::nonNull);
+            }
+            return iterator;
+        });
+    }
+
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return of(() -> PickIterator.toIterator(() -> seed, operator));
+        return convert(() -> EndlessIterator.of(seed, operator));
     }
 
-    public static <T> Seq<T> gen(Supplier<T> seed, UnaryOperator<T> operator) {
-        return of(() -> PickIterator.toIterator(seed, operator));
-    }
-
-    public static <T> Seq<T> gen(Supplier<T> supplier) {
-        return of(() -> PickIterator.toIterator(supplier));
+    public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
+        return convert(() -> EndlessIterator.of(seed1, seed2, operator));
     }
 
     @Override
@@ -63,14 +73,14 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <S, E> Seq<E> map(Supplier<S> stateSupplier, BiFunction<S, T, E> function) {
-        return of(() -> {
+        return convert(() -> {
             S s = stateSupplier.get();
             return map(it -> function.apply(s, it)).iterator();
         });
     }
 
     public <E> Seq<E> map(Function<T, E> function) {
-        return of(() -> new Iterator<E>() {
+        Seq<E> res = convert(() -> new Iterator<E>() {
             Iterator<T> iterator = iterator();
 
             @Override
@@ -83,10 +93,12 @@ public abstract class Seq<T> extends IterableExt<T> {
                 return function.apply(iterator.next());
             }
         });
+        res.setSize(this);
+        return res;
     }
 
     public Seq<T> filter(Predicate<T> predicate) {
-        return of(() -> PickIterator.filter(iterator(), predicate));
+        return convert(() -> PickIterator.filter(iterator(), predicate));
     }
 
     public Seq<T> filterNotNull() {
@@ -104,7 +116,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> takeWhile(Predicate<T> predicate) {
-        return of(() -> PickIterator.takeWhile(iterator(), predicate));
+        return convert(() -> PickIterator.takeWhile(iterator(), predicate));
     }
 
     public Seq<T> take(int n) {
@@ -122,11 +134,12 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> dropWhile(Predicate<T> predicate) {
-        return of(() -> PickIterator.dropWhile(iterator(), predicate));
+        return convert(() -> PickIterator.dropWhile(iterator(), predicate));
     }
 
     public <E> Seq<E> runningFold(E init, BiFunction<E, T, E> function) {
-        return map(() -> StateBox.ofItem(init), (b, it) -> b.item = function.apply(b.item, it));
+        return map(() -> new MutablePair<>(init, null),
+            (p, it) -> p.first = function.apply(p.first, it));
     }
 
     public Seq<T> onEach(Consumer<T> consumer) {
@@ -153,7 +166,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
-        return of(() -> new FlatIterator<>(map(function).iterator()));
+        return convert(() -> new FlatIterator<>(map(function).iterator()));
     }
 
     public Seq<T> append(Iterable<T> seq) {

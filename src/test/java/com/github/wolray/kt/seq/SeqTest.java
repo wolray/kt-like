@@ -28,5 +28,7 @@ public class SeqTest {
         Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
         List<Integer> list = seq.toBatchList(5);
         System.out.println(list);
+        System.out.println(seq.runningFold(0, Integer::sum));
+        System.out.println(Seq.gen(1, 1, Integer::sum).take(10));
     }
 }
