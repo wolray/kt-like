@@ -42,7 +42,7 @@ public class BatchList<T> extends AbstractList<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return new FlatIterator<>(list.iterator(), it -> it);
+        return new FlatIterator<>(list.iterator());
     }
 
     @Override
