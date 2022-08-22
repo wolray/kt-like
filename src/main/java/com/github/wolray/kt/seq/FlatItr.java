@@ -6,11 +6,11 @@ import java.util.NoSuchElementException;
 /**
  * @author wolray
  */
-public class FlatIterator<R, T extends Iterable<R>> implements Iterator<R> {
+public class FlatItr<R, T extends Iterable<R>> implements Iterator<R> {
     private final Iterator<T> iterator;
     private Iterator<R> cur;
 
-    public FlatIterator(Iterator<T> iterator) {
+    public FlatItr(Iterator<T> iterator) {
         this.iterator = iterator;
     }
 

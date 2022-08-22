@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 /**
  * @author wolray
  */
-public class PickIterator<T> implements Iterator<T> {
+public class PickItr<T> implements Iterator<T> {
     private final Iterator<T> iterator;
     private final Supplier<State> computeNext;
     private final State afterPick;
@@ -16,15 +16,15 @@ public class PickIterator<T> implements Iterator<T> {
     private State state = State.Unset;
     private T next;
 
-    public PickIterator(Iterator<T> iterator, boolean checkOnce, State afterPick, Predicate<T> predicate) {
+    public PickItr(Iterator<T> iterator, boolean checkOnce, State afterPick, Predicate<T> predicate) {
         this.iterator = iterator;
         computeNext = checkOnce ? this::computeNextOnce : this::computeNextUntil;
         this.afterPick = afterPick;
         this.predicate = predicate;
     }
 
-    private static <T> Iterator<T> takeIf(Iterator<T> source, boolean checkOnce, Predicate<T> predicate) {
-        return new PickIterator<>(source, checkOnce, State.Unset, predicate);
+    static <T> Iterator<T> takeIf(Iterator<T> source, boolean checkOnce, Predicate<T> predicate) {
+        return new PickItr<>(source, checkOnce, State.Unset, predicate);
     }
 
     public static <T> Iterator<T> filter(Iterator<T> source, Predicate<T> predicate) {
@@ -36,7 +36,7 @@ public class PickIterator<T> implements Iterator<T> {
     }
 
     public static <T> Iterator<T> dropWhile(Iterator<T> source, Predicate<T> predicate) {
-        return new PickIterator<>(source, false, State.Done, predicate.negate());
+        return new PickItr<>(source, false, State.Done, predicate.negate());
     }
 
     private State computeNextOnce() {

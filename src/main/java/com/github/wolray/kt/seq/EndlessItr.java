@@ -9,7 +9,7 @@ import java.util.function.UnaryOperator;
 /**
  * @author wolray
  */
-public abstract class EndlessIterator<T> implements Iterator<T> {
+public abstract class EndlessItr<T> implements Iterator<T> {
     public static <T> Iterator<T> of(T seed, UnaryOperator<T> operator) {
         MutablePair<T, T> pair = new MutablePair<>(seed, null);
         return of(Arrays.asList(
@@ -31,7 +31,7 @@ public abstract class EndlessIterator<T> implements Iterator<T> {
     }
 
     public static <T> Iterator<T> of(Supplier<T> supplier) {
-        return new EndlessIterator<T>() {
+        return new EndlessItr<T>() {
             @Override
             public T next() {
                 return supplier.get();
@@ -44,7 +44,7 @@ public abstract class EndlessIterator<T> implements Iterator<T> {
         if (!iterator.hasNext()) {
             throw new IllegalArgumentException("empty suppliers");
         }
-        return new EndlessIterator<T>() {
+        return new EndlessItr<T>() {
             boolean done;
             Supplier<T> supplier = iterator.next();
 

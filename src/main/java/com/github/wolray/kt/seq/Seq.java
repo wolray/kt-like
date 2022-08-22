@@ -49,22 +49,22 @@ public abstract class Seq<T> extends IterableExt<T> {
         return of(yield.list);
     }
 
-    public static <T> Seq<T> gen(boolean untilNull, Supplier<T> supplier) {
+    public static <T> Seq<T> gen(boolean breakAtNull, Supplier<T> supplier) {
         return convert(() -> {
-            Iterator<T> iterator = EndlessIterator.of(supplier);
-            if (untilNull) {
-                return PickIterator.takeWhile(iterator, Objects::nonNull);
+            Iterator<T> iterator = EndlessItr.of(supplier);
+            if (breakAtNull) {
+                return PickItr.takeWhile(iterator, Objects::nonNull);
             }
             return iterator;
         });
     }
 
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return convert(() -> EndlessIterator.of(seed, operator));
+        return convert(() -> EndlessItr.of(seed, operator));
     }
 
     public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
-        return convert(() -> EndlessIterator.of(seed1, seed2, operator));
+        return convert(() -> EndlessItr.of(seed1, seed2, operator));
     }
 
     @Override
@@ -98,7 +98,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> filter(Predicate<T> predicate) {
-        return convert(() -> PickIterator.filter(iterator(), predicate));
+        return convert(() -> PickItr.filter(iterator(), predicate));
     }
 
     public Seq<T> filterNotNull() {
@@ -116,7 +116,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> takeWhile(Predicate<T> predicate) {
-        return convert(() -> PickIterator.takeWhile(iterator(), predicate));
+        return convert(() -> PickItr.takeWhile(iterator(), predicate));
     }
 
     public Seq<T> take(int n) {
@@ -134,7 +134,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> dropWhile(Predicate<T> predicate) {
-        return convert(() -> PickIterator.dropWhile(iterator(), predicate));
+        return convert(() -> PickItr.dropWhile(iterator(), predicate));
     }
 
     public <E> Seq<E> runningFold(E init, BiFunction<E, T, E> function) {
@@ -166,7 +166,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
-        return convert(() -> new FlatIterator<>(map(function).iterator()));
+        return convert(() -> new FlatItr<>(map(function).iterator()));
     }
 
     public Seq<T> append(Iterable<T> seq) {
