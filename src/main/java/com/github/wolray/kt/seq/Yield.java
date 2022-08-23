@@ -1,5 +1,6 @@
 package com.github.wolray.kt.seq;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -14,7 +15,7 @@ public class Yield<T> {
 
     Yield(int batchSize) {
         this.batchSize = batchSize;
-        list = new SinglyList<>();
+        list = new ArrayList<>();
     }
 
     private void ensureAppender() {
