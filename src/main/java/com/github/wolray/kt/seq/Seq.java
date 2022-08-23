@@ -50,13 +50,9 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public static <T> Seq<T> gen(boolean breakAtNull, Supplier<T> supplier) {
-        return convert(() -> {
-            Iterator<T> iterator = EndlessItr.of(supplier);
-            if (breakAtNull) {
-                return PickItr.takeWhile(iterator, Objects::nonNull);
-            }
-            return iterator;
-        });
+        return breakAtNull
+            ? convert(() -> PickItr.takeWhile(EndlessItr.of(supplier), Objects::nonNull))
+            : convert(() -> EndlessItr.of(supplier));
     }
 
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
@@ -95,6 +91,10 @@ public abstract class Seq<T> extends IterableExt<T> {
         });
         res.setSize(this);
         return res;
+    }
+
+    public <E> Seq<E> mapNotNull(Function<T, E> function) {
+        return map(function).filterNotNull();
     }
 
     public Seq<T> filter(Predicate<T> predicate) {
@@ -194,10 +194,14 @@ public abstract class Seq<T> extends IterableExt<T> {
         return SeqScope.INSTANCE.zip(this, bs, cs);
     }
 
+    public Stream<T> stream(boolean parallel) {
+        return StreamSupport.stream(spliterator(), parallel);
+    }
+
     @SafeVarargs
     public final void assertTo(T... ts) {
         Iterator<T> iterator = iterator();
-        for (T t: ts) {
+        for (T t : ts) {
             assert iterator.hasNext() && Objects.equals(iterator.next(), t) : "mismatched";
         }
         assert !iterator.hasNext() : "exceeded";
