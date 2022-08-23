@@ -28,6 +28,15 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     @SafeVarargs
+    public static <T> Seq<T> join(Iterable<T>... iterable) {
+        return join(Arrays.asList(iterable));
+    }
+
+    public static <T> Seq<T> join(Iterable<? extends Iterable<T>> iterables) {
+        return convert(() -> new FlatItr<>(iterables.iterator()));
+    }
+
+    @SafeVarargs
     public static <T> Seq<T> of(T... ts) {
         return of(Arrays.asList(ts));
     }
@@ -168,11 +177,11 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
-        return convert(() -> new FlatItr<>(map(function).iterator()));
+        return join(map(function));
     }
 
     public Seq<T> append(Iterable<T> seq) {
-        return of(this, seq).flatMap(s -> s);
+        return join(Arrays.asList(this, seq));
     }
 
     @SafeVarargs

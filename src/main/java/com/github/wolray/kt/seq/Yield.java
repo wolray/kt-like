@@ -1,28 +1,47 @@
 package com.github.wolray.kt.seq;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author wolray
  */
 public class Yield<T> {
-    final BatchList<T> list;
+    final List<Iterable<T>> list;
+    private final int batchSize;
+    private BatchList<T> cur;
 
     Yield(int batchSize) {
-        list = new BatchList<>(batchSize);
+        this.batchSize = batchSize;
+        list = new SinglyList<>();
+    }
+
+    private void ensureAppender() {
+        if (cur == null) {
+            cur = new BatchList<>(batchSize);
+            list.add(cur);
+        }
     }
 
     public void yield(T t) {
-        list.add(t);
+        ensureAppender();
+        cur.add(t);
+    }
+
+    @SafeVarargs
+    public final void yield(T... t) {
+        ensureAppender();
+        cur.addAll(Arrays.asList(t));
     }
 
     public void yieldAll(Iterable<T> iterable) {
-        iterable.forEach(this::yield);
+        list.add(iterable);
+        cur = null;
     }
 
     public void yieldAll(Iterator<T> iterator) {
-        while (iterator.hasNext()) {
-            this.yield(iterator.next());
-        }
+        list.add(() -> iterator);
+        cur = null;
     }
 }
