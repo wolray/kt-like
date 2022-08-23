@@ -2,6 +2,8 @@ package com.github.wolray.kt.seq;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author wolray
