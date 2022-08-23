@@ -194,8 +194,17 @@ public abstract class Seq<T> extends IterableExt<T> {
         return SeqScope.INSTANCE.zip(this, bs, cs);
     }
 
+    @SafeVarargs
+    public final void assertTo(T... ts) {
+        Iterator<T> iterator = iterator();
+        for (T t: ts) {
+            assert iterator.hasNext() && Objects.equals(iterator.next(), t) : "mismatched";
+        }
+        assert !iterator.hasNext() : "exceeded";
+    }
+
     static class EmptySeq {
-        static final Seq<Object> INSTANCE = of(Collections::emptyIterator);
+        static final Seq<Object> INSTANCE = convert(Collections::emptyIterator);
     }
 
     public static class IndexedValue<T> {

@@ -205,6 +205,16 @@ public abstract class IterableExt<T> implements Iterable<T> {
         return c;
     }
 
+    public int count(Predicate<T> predicate) {
+        int c = 0;
+        for (T t : this) {
+            if (predicate.test(t)) {
+                c++;
+            }
+        }
+        return c;
+    }
+
     public double sum(ToDoubleFunction<T> function) {
         double res = 0;
         for (T t : this) {
