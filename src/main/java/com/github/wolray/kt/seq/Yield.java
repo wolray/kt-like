@@ -50,6 +50,6 @@ public class Yield<T> {
     }
 
     public void yieldAll(Supplier<T> supplier) {
-        yieldAll(() -> EndlessItr.of(supplier));
+        yieldAll(Seq.gen(supplier));
     }
 }

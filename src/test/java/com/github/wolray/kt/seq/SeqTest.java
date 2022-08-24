@@ -18,10 +18,10 @@ public class SeqTest {
         System.out.println(seq.filter(predicate));
         System.out.println(seq.dropWhile(predicate));
         System.out.println(seq.takeWhile(predicate));
-        System.out.println(seq.take(5));
-        System.out.println(seq.take(5).drop(2));
-        System.out.println(Seq.gen(() -> 1).take(4));
-        System.out.println(Seq.gen(() -> 1).take(5));
+//        System.out.println(seq.take(5));
+//        System.out.println(seq.take(5).drop(2));
+//        System.out.println(Seq.gen(() -> 1).take(4));
+//        System.out.println(Seq.gen(() -> 1).take(5));
     }
 
     @Test
