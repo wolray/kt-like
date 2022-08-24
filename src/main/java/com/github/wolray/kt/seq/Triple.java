@@ -13,4 +13,9 @@ public class Triple<T, A, B> {
         this.second = second;
         this.third = third;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%s,%s,%s)", first, second, third);
+    }
 }

@@ -148,6 +148,10 @@ public abstract class Seq<T> extends IterableExt<T> {
         return convert(() -> PickItr.dropWhile(iterator(), predicate));
     }
 
+    public Seq<List<T>> chunked(int size) {
+        return convert(() -> new WindowItr<>(iterator(), size));
+    }
+
     public <E> Seq<E> runningFold(E init, BiFunction<E, T, E> function) {
         return map(() -> new MutablePair<>(init, null),
             (p, it) -> p.first = function.apply(p.first, it));
@@ -203,6 +207,15 @@ public abstract class Seq<T> extends IterableExt<T> {
 
     public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
         return SeqScope.INSTANCE.zip(this, bs, cs);
+    }
+
+    public <E> Seq<Pair<T, E>> cartesian(Iterable<E> es) {
+        return cartesian(es, Pair::new);
+    }
+
+    public <E, R> Seq<R> cartesian(Iterable<E> es, BiFunction<T, E, R> function) {
+        Seq<E> seq = of(es);
+        return flatMap(t -> seq.map(e -> function.apply(t, e)));
     }
 
     public Stream<T> stream(boolean parallel) {
