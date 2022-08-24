@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * @author wolray
@@ -36,13 +37,19 @@ public class Yield<T> {
         cur.addAll(Arrays.asList(t));
     }
 
+    public void yieldAll(Iterator<T> iterator) {
+        ensureAppender();
+        while (iterator.hasNext()) {
+            cur.add(iterator.next());
+        }
+    }
+
     public void yieldAll(Iterable<T> iterable) {
         list.add(iterable);
         cur = null;
     }
 
-    public void yieldAll(Iterator<T> iterator) {
-        list.add(() -> iterator);
-        cur = null;
+    public void yieldAll(Supplier<T> supplier) {
+        yieldAll(() -> EndlessItr.of(supplier));
     }
 }

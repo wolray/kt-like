@@ -20,8 +20,8 @@ public class SeqTest {
         System.out.println(seq.takeWhile(predicate));
         System.out.println(seq.take(5));
         System.out.println(seq.take(5).drop(2));
-        System.out.println(Seq.gen(false, () -> 1).take(4));
-        System.out.println(Seq.gen(false, () -> 1).take(5));
+        System.out.println(Seq.gen(() -> 1).take(4));
+        System.out.println(Seq.gen(() -> 1).take(5));
     }
 
     @Test
@@ -30,7 +30,12 @@ public class SeqTest {
         List<Integer> list = seq.toBatchList(5);
         System.out.println(list);
         System.out.println(seq.runningFold(0, Integer::sum));
-        System.out.println(Seq.gen(1, 1, Integer::sum).take(10));
+        Seq<Integer> fib = Seq.gen(1, 1, Integer::sum);
+        System.out.println(fib.take(10));
+        System.out.println(fib.take(10));
+        Seq<Integer> quad = Seq.gen(1, i -> i * 2);
+        System.out.println(quad.take(10));
+        System.out.println(quad.take(10));
     }
 
     @Test

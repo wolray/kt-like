@@ -60,18 +60,28 @@ public abstract class Seq<T> extends IterableExt<T> {
         return join(yield.list);
     }
 
-    public static <T> Seq<T> gen(boolean breakAtNull, Supplier<T> supplier) {
-        return breakAtNull
-            ? convert(() -> PickItr.takeWhile(EndlessItr.of(supplier), Objects::nonNull))
-            : convert(() -> EndlessItr.of(supplier));
+    public static <S, T> Seq<T> of(Supplier<S> stateSuppler, Function<S, T> function) {
+        return convert(() -> EndlessItr.of(stateSuppler.get(), function));
+    }
+
+    public static <T> Seq<T> gen(Supplier<T> supplier) {
+        return convert(() -> EndlessItr.of(supplier));
     }
 
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return convert(() -> EndlessItr.of(seed, operator));
+        return of(seed)
+            .append(of(() -> new MutablePair<>(seed, null),
+                p -> p.first = operator.apply(p.first)));
     }
 
     public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
-        return convert(() -> EndlessItr.of(seed1, seed2, operator));
+        return of(seed1, seed2)
+            .append(of(() -> new MutablePair<>(seed1, seed2), p -> {
+                T t = operator.apply(p.first, p.second);
+                p.first = p.second;
+                p.second = t;
+                return t;
+            }));
     }
 
     @Override
@@ -128,6 +138,10 @@ public abstract class Seq<T> extends IterableExt<T> {
 
     public Seq<T> takeWhile(Predicate<T> predicate) {
         return convert(() -> PickItr.takeWhile(iterator(), predicate));
+    }
+
+    public Seq<T> untilNull() {
+        return takeWhile(Objects::nonNull);
     }
 
     public Seq<T> take(int n) {
