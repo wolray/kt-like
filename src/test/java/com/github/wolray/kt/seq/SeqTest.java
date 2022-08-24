@@ -30,12 +30,12 @@ public class SeqTest {
         List<Integer> list = seq.toBatchList(5);
         System.out.println(list);
         System.out.println(seq.runningFold(0, Integer::sum));
-        Seq<Integer> fib = Seq.gen(1, 1, Integer::sum);
-        System.out.println(fib.take(10));
-        System.out.println(fib.take(10));
-        Seq<Integer> quad = Seq.gen(1, i -> i * 2);
-        System.out.println(quad.take(10));
-        System.out.println(quad.take(10));
+        Seq<Integer> fib = Seq.gen(1, 1, Integer::sum).take(10);
+        System.out.println(fib);
+        System.out.println(fib);
+        Seq<Integer> quad = Seq.gen(1, i -> i * 2).take(10);
+        System.out.println(quad);
+        System.out.println(quad);
     }
 
     @Test

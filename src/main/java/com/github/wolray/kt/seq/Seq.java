@@ -9,15 +9,6 @@ import java.util.stream.StreamSupport;
  * @author wolray
  */
 public abstract class Seq<T> extends IterableExt<T> {
-    public static <T> Seq<T> of(Iterable<T> iterable) {
-        if (iterable instanceof Seq<?>) {
-            return (Seq<T>)iterable;
-        }
-        Seq<T> seq = convert(iterable);
-        seq.setSize(iterable);
-        return seq;
-    }
-
     static <T> Seq<T> convert(Iterable<T> iterable) {
         return new Seq<T>() {
             @Override
@@ -27,13 +18,13 @@ public abstract class Seq<T> extends IterableExt<T> {
         };
     }
 
-    @SafeVarargs
-    public static <T> Seq<T> join(Iterable<T>... iterable) {
-        return join(Arrays.asList(iterable));
-    }
-
-    public static <T> Seq<T> join(Iterable<? extends Iterable<T>> iterables) {
-        return convert(() -> new FlatItr<>(iterables.iterator()));
+    public static <T> Seq<T> of(Iterable<T> iterable) {
+        if (iterable instanceof Seq<?>) {
+            return (Seq<T>)iterable;
+        }
+        Seq<T> seq = convert(iterable);
+        seq.setSize(iterable);
+        return seq;
     }
 
     @SafeVarargs
@@ -45,23 +36,22 @@ public abstract class Seq<T> extends IterableExt<T> {
         return of(map.entrySet());
     }
 
+    @SafeVarargs
+    public static <T> Seq<T> join(Iterable<T>... iterable) {
+        return join(Arrays.asList(iterable));
+    }
+
+    public static <T> Seq<T> join(Iterable<? extends Iterable<T>> iterables) {
+        return convert(() -> new FlatItr<>(iterables.iterator()));
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> Seq<T> empty() {
         return (Seq<T>)EmptySeq.INSTANCE;
     }
 
-    public static <T> Seq<T> of(Consumer<Yield<T>> yieldConsumer) {
-        return of(10, yieldConsumer);
-    }
-
-    public static <T> Seq<T> of(int batchSize, Consumer<Yield<T>> yieldConsumer) {
-        Yield<T> yield = new Yield<>(batchSize);
-        yieldConsumer.accept(yield);
-        return join(yield.list);
-    }
-
-    public static <S, T> Seq<T> of(Supplier<S> stateSuppler, Function<S, T> function) {
-        return convert(() -> EndlessItr.of(stateSuppler.get(), function));
+    public static <S, T> Seq<T> recur(Supplier<S> stateSupplier, Function<S, T> function) {
+        return convert(() -> EndlessItr.of(stateSupplier.get(), function));
     }
 
     public static <T> Seq<T> gen(Supplier<T> supplier) {
@@ -69,19 +59,29 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return of(seed)
-            .append(of(() -> new MutablePair<>(seed, null),
+        return join(Collections.singletonList(seed),
+            recur(() -> new MutablePair<>(seed, null),
                 p -> p.first = operator.apply(p.first)));
     }
 
     public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
-        return of(seed1, seed2)
-            .append(of(() -> new MutablePair<>(seed1, seed2), p -> {
+        return join(Arrays.asList(seed1, seed2),
+            recur(() -> new MutablePair<>(seed1, seed2), p -> {
                 T t = operator.apply(p.first, p.second);
                 p.first = p.second;
                 p.second = t;
                 return t;
             }));
+    }
+
+    public static <T> Seq<T> gen(Consumer<Yield<T>> yieldConsumer) {
+        return gen(10, yieldConsumer);
+    }
+
+    public static <T> Seq<T> gen(int batchSize, Consumer<Yield<T>> yieldConsumer) {
+        Yield<T> yield = new Yield<>(batchSize);
+        yieldConsumer.accept(yield);
+        return join(yield.list);
     }
 
     @Override
@@ -204,7 +204,7 @@ public abstract class Seq<T> extends IterableExt<T> {
 
     @SafeVarargs
     public final Seq<T> append(T... t) {
-        return append(of(t));
+        return append(Arrays.asList(t));
     }
 
     public Seq<IndexedValue<T>> withIndex() {
