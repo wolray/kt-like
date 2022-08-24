@@ -2,6 +2,7 @@ package com.github.wolray.kt.seq;
 
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -30,5 +31,14 @@ public class SeqTest {
         System.out.println(list);
         System.out.println(seq.runningFold(0, Integer::sum));
         System.out.println(Seq.gen(1, 1, Integer::sum).take(10));
+    }
+
+    @Test
+    public void testChunked() {
+        List<Integer> list = Arrays.asList(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
+        System.out.println(Seq.of(list).chunked(2));
+        System.out.println(Seq.of(list).chunked(3));
+        System.out.println(Seq.of(list).chunked(4));
+        System.out.println(Seq.of(list).chunked(5));
     }
 }

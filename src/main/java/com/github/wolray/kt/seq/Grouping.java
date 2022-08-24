@@ -2,10 +2,7 @@ package com.github.wolray.kt.seq;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /**
  * @author wolray
@@ -111,15 +108,43 @@ public class Grouping<T, K> {
         return fold(t -> 1, Integer::sum);
     }
 
-    public Map<K, Double> sum(Function<T, Double> mapper) {
-        return fold(mapper, Double::sum);
+    public Map<K, Double> sum(Function<T, Double> function) {
+        return fold(function, Double::sum);
     }
 
-    public Map<K, Integer> sumInt(Function<T, Integer> mapper) {
-        return fold(mapper, Integer::sum);
+    public Map<K, Integer> sumInt(Function<T, Integer> function) {
+        return fold(function, Integer::sum);
     }
 
-    public Map<K, Long> sumLong(Function<T, Long> mapper) {
-        return fold(mapper, Long::sum);
+    public Map<K, Long> sumLong(Function<T, Long> function) {
+        return fold(function, Long::sum);
+    }
+
+    public Map<K, DoubleSummaryStatistics> summarize(ToDoubleFunction<T> function) {
+        return foldBy(DoubleSummaryStatistics::new, (stat, t) -> stat.accept(function.applyAsDouble(t)));
+    }
+
+    public Map<K, IntSummaryStatistics> summarizeInt(ToIntFunction<T> function) {
+        return foldBy(IntSummaryStatistics::new, (stat, t) -> stat.accept(function.applyAsInt(t)));
+    }
+
+    public Map<K, LongSummaryStatistics> summarizeLong(ToLongFunction<T> function) {
+        return foldBy(LongSummaryStatistics::new, (stat, t) -> stat.accept(function.applyAsLong(t)));
+    }
+
+    public <E extends Comparable<E>> Map<K, E> max(Function<T, E> function) {
+        return fold(function, (t1, t2) -> t1.compareTo(t2) > 0 ? t1 : t2);
+    }
+
+    public <E> Map<K, E> max(Function<T, E> function, Comparator<E> comparator) {
+        return fold(function, (t1, t2) -> comparator.compare(t1, t2) > 0 ? t1 : t2);
+    }
+
+    public <E extends Comparable<E>> Map<K, E> min(Function<T, E> function) {
+        return fold(function, (t1, t2) -> t1.compareTo(t2) < 0 ? t1 : t2);
+    }
+
+    public <E> Map<K, E> min(Function<T, E> function, Comparator<E> comparator) {
+        return fold(function, (t1, t2) -> comparator.compare(t1, t2) < 0 ? t1 : t2);
     }
 }

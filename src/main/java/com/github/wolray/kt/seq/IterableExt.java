@@ -239,6 +239,28 @@ public abstract class IterableExt<T> implements Iterable<T> {
         return res;
     }
 
+    public double average(ToDoubleFunction<T> function) {
+        double res = 0;
+        int count = 0;
+        for (T t : this) {
+            res += function.applyAsDouble(t);
+            count++;
+        }
+        return count > 0 ? res / count : 0;
+    }
+
+    public DoubleSummaryStatistics summarize(ToDoubleFunction<T> function) {
+        return foldBy(new DoubleSummaryStatistics(), (stat, t) -> stat.accept(function.applyAsDouble(t)));
+    }
+
+    public IntSummaryStatistics summarizeInt(ToIntFunction<T> function) {
+        return foldBy(new IntSummaryStatistics(), (stat, t) -> stat.accept(function.applyAsInt(t)));
+    }
+
+    public LongSummaryStatistics summarizeLong(ToLongFunction<T> function) {
+        return foldBy(new LongSummaryStatistics(), (stat, t) -> stat.accept(function.applyAsLong(t)));
+    }
+
     public T first() {
         Iterator<T> iterator = iterator();
         return iterator.hasNext() ? iterator.next() : null;
