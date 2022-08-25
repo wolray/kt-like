@@ -22,6 +22,8 @@ public class SeqTest {
         seq.take(5).drop(2).assertTo(4, 1, 6);
         Seq.gen(() -> 1).take(4).assertTo(1, 1, 1, 1);
         Seq.gen(() -> 1).take(5).assertTo(1, 1, 1, 1, 1);
+        Seq.repeat(1, 5).assertTo(1, 1, 1, 1, 1);
+        Seq.range(0, 10, 2).assertTo(0, 2, 4, 6, 8);
     }
 
     @Test

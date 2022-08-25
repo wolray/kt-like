@@ -50,6 +50,25 @@ public abstract class Seq<T> extends IterableExt<T> {
         return (Seq<T>)EmptySeq.INSTANCE;
     }
 
+    public static Seq<Integer> range(int until) {
+        return range(0, until, 1);
+    }
+
+    public static Seq<Integer> range(int start, int until) {
+        return range(start, until, 1);
+    }
+
+    public static Seq<Integer> range(int start, int until, int step) {
+        if (start > until) {
+            throw new IllegalArgumentException();
+        }
+        return convert(() -> RepeatItr.range(start, until, step));
+    }
+
+    public static <T> Seq<T> repeat(T t, int n) {
+        return convert(() -> RepeatItr.repeat(t, n));
+    }
+
     public static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
         return convert(() -> PickItr.gen(seedSupplier.get(), function));
     }
@@ -58,26 +77,39 @@ public abstract class Seq<T> extends IterableExt<T> {
         return convert(() -> PickItr.gen(supplier));
     }
 
+    public static Seq<Integer> gen(int seed, IntUnaryOperator operator) {
+        return convert(() -> PickItr.gen(new int[]{seed}, a -> {
+            int t = a[0];
+            a[0] = operator.applyAsInt(a[0]);
+            return t;
+        }));
+    }
+
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return join(Collections.singletonList(seed),
-            convert(() -> PickItr.gen(new Mutable<>(seed), m -> m.it = operator.apply(m.it))));
+        return convert(() -> PickItr.gen(new Mutable<>(seed), m -> {
+            T t = m.it;
+            m.it = operator.apply(m.it);
+            return t;
+        }));
+    }
+
+    public static Seq<Integer> gen(int seed1, int seed2, IntBinaryOperator operator) {
+        return join(Arrays.asList(seed1, seed2),
+            convert(() -> PickItr.gen(new int[]{seed1, seed2}, a ->
+                a[1] = operator.applyAsInt(a[0], a[0] = a[1]))));
     }
 
     public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
         return join(Arrays.asList(seed1, seed2),
-            convert(() -> PickItr.gen(new MutablePair<>(seed1, seed2), p -> {
-                T t = operator.apply(p.first, p.second);
-                p.first = p.second;
-                p.second = t;
-                return t;
-            })));
+            convert(() -> PickItr.gen(new MutablePair<>(seed1, seed2), p ->
+                p.second = operator.apply(p.first, p.first = p.second))));
     }
 
-    public static <T> Seq<T> gen(Consumer<Yield<T>> yieldConsumer) {
-        return gen(10, yieldConsumer);
+    public static <T> Seq<T> by(Consumer<Yield<T>> yieldConsumer) {
+        return by(10, yieldConsumer);
     }
 
-    public static <T> Seq<T> gen(int batchSize, Consumer<Yield<T>> yieldConsumer) {
+    public static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
         Yield<T> yield = new Yield<>(batchSize);
         yieldConsumer.accept(yield);
         return join(yield.list);
