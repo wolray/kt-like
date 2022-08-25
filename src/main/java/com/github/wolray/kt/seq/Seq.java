@@ -42,7 +42,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public static <T> Seq<T> join(Iterable<? extends Iterable<T>> iterables) {
-        return convert(() -> new FlatItr<>(iterables.iterator()));
+        return convert(() -> PickItr.flat(iterables.iterator()));
     }
 
     @SuppressWarnings("unchecked")
@@ -51,41 +51,26 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
-        return convert(() -> RecurringItr.of(seedSupplier.get(), function));
-    }
-
-    public static <A, B, T> Seq<T> recur(Supplier<A> seed1, Supplier<B> seed2, BiFunction<A, B, T> function) {
-        return convert(() -> RecurringItr.of(seed1.get(), seed2.get(), function));
+        return convert(() -> PickItr.gen(seedSupplier.get(), function));
     }
 
     public static <T> Seq<T> gen(Supplier<T> supplier) {
-        return convert(() -> new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return true;
-            }
-
-            @Override
-            public T next() {
-                return supplier.get();
-            }
-        });
+        return convert(() -> PickItr.gen(supplier));
     }
 
     public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
         return join(Collections.singletonList(seed),
-            recur(() -> new MutablePair<>(seed, null),
-                p -> p.first = operator.apply(p.first)));
+            convert(() -> PickItr.gen(new Mutable<>(seed), m -> m.it = operator.apply(m.it))));
     }
 
     public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
         return join(Arrays.asList(seed1, seed2),
-            recur(() -> new MutablePair<>(seed1, seed2), p -> {
+            convert(() -> PickItr.gen(new MutablePair<>(seed1, seed2), p -> {
                 T t = operator.apply(p.first, p.second);
                 p.first = p.second;
                 p.second = t;
                 return t;
-            }));
+            })));
     }
 
     public static <T> Seq<T> gen(Consumer<Yield<T>> yieldConsumer) {
@@ -98,10 +83,6 @@ public abstract class Seq<T> extends IterableExt<T> {
         return join(yield.list);
     }
 
-    public static <E> E stop() {
-        throw new RecurringItr.StopException();
-    }
-
     public <E> Seq<E> recur(Function<Iterator<T>, E> function) {
         return recur(this::iterator, function);
     }
@@ -112,32 +93,23 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <S, E> Seq<E> map(Supplier<S> stateSupplier, BiFunction<T, S, E> function) {
-        return convert(() -> {
-            S s = stateSupplier.get();
-            return map(it -> function.apply(it, s)).iterator();
-        });
+        return convert(() -> MapItr.of(iterator(), stateSupplier.get(), function));
     }
 
     public <E> Seq<E> map(Function<T, E> function) {
-        Seq<E> res = convert(() -> new Iterator<E>() {
-            Iterator<T> iterator = iterator();
-
-            @Override
-            public boolean hasNext() {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public E next() {
-                return function.apply(iterator.next());
-            }
-        });
-        res.setSize(this);
-        return res;
+        return convert(() -> MapItr.of(iterator(), function));
     }
 
     public <E> Seq<E> mapNotNull(Function<T, E> function) {
-        return map(function).filterNotNull();
+        return recur(itr -> {
+            while (itr.hasNext()) {
+                E e = function.apply(itr.next());
+                if (e != null) {
+                    return e;
+                }
+            }
+            return PickItr.stop();
+        });
     }
 
     public Seq<T> filter(Predicate<T> predicate) {
@@ -148,7 +120,7 @@ public abstract class Seq<T> extends IterableExt<T> {
                     return t;
                 }
             }
-            return stop();
+            return PickItr.stop();
         });
     }
 
@@ -157,13 +129,39 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> distinct() {
-        Set<T> set = new HashSet<>();
-        return filter(set::add);
+        return convert(() -> new PickItr<T>() {
+            Iterator<T> iterator = iterator();
+            Set<T> set = new HashSet<>();
+
+            @Override
+            public T pick() {
+                while (iterator.hasNext()) {
+                    T next = iterator.next();
+                    if (set.add(next)) {
+                        return next;
+                    }
+                }
+                return stop();
+            }
+        });
     }
 
     public <E> Seq<T> distinctBy(Function<T, E> function) {
-        Set<E> set = new HashSet<>();
-        return filter(it -> set.add(function.apply(it)));
+        return convert(() -> new PickItr<T>() {
+            Iterator<T> iterator = iterator();
+            Set<E> set = new HashSet<>();
+
+            @Override
+            public T pick() {
+                while (iterator.hasNext()) {
+                    T next = iterator.next();
+                    if (set.add(function.apply(next))) {
+                        return next;
+                    }
+                }
+                return stop();
+            }
+        });
     }
 
     public Seq<T> takeWhile(Predicate<T> predicate) {
@@ -174,7 +172,7 @@ public abstract class Seq<T> extends IterableExt<T> {
                     return t;
                 }
             }
-            return stop();
+            return PickItr.stop();
         });
     }
 
@@ -182,42 +180,51 @@ public abstract class Seq<T> extends IterableExt<T> {
         return takeWhile(Objects::nonNull);
     }
 
+    private boolean outRange(int n) {
+        return size != null && n >= size;
+    }
+
     public Seq<T> take(int n) {
-        if (n <= 0) {
-            return empty();
-        }
-        return new SubSeq<>(this, 0, n);
+        return n <= 0 ? empty()
+            : outRange(n) ? this
+            : convert(() -> PickItr.take(iterator(), n));
     }
 
     public Seq<T> drop(int n) {
-        if (n <= 0) {
-            return this;
-        }
-        return new SubSeq<>(this, n, null);
+        return n <= 0 ? this
+            : outRange(n) ? empty()
+            : convert(() -> PickItr.drop(iterator(), n));
     }
 
     public Seq<T> dropWhile(Predicate<T> predicate) {
-        return recur(this::iterator, () -> new boolean[1], (itr, a) -> {
-            while (itr.hasNext()) {
-                T t = itr.next();
-                if (a[0]) {
-                    return t;
+        return convert(() -> new PickItr<T>() {
+            Iterator<T> iterator = iterator();
+            boolean done;
+
+            @Override
+            public T pick() {
+                while (iterator.hasNext()) {
+                    T t = iterator.next();
+                    if (done) {
+                        return t;
+                    }
+                    if (!predicate.test(t)) {
+                        done = true;
+                        return t;
+                    }
                 }
-                if (!predicate.test(t)) {
-                    a[0] = true;
-                    return t;
-                }
+                return stop();
             }
-            return stop();
         });
     }
 
     public Seq<List<T>> chunked(int size) {
-        return convert(() -> new WindowItr<>(iterator(), size));
+        return convert(() -> PickItr.window(iterator(), size));
     }
 
     public <E> Seq<E> runningFold(E init, BiFunction<T, E, E> function) {
-        return map(() -> new Mutable<>(init), (t, m) -> m.it = function.apply(t, m.it));
+        return convert(() -> MapItr.of(iterator(), new Mutable<>(init),
+            (t, m) -> m.it = function.apply(t, m.it)));
     }
 
     public Seq<T> onEach(Consumer<T> consumer) {
@@ -257,7 +264,8 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<IndexedValue<T>> withIndex() {
-        return map(() -> new int[1], (it, a) -> new IndexedValue<>(a[0]++, it));
+        return convert(() -> MapItr.of(iterator(), new int[1],
+            (t, a) -> new IndexedValue<>(a[0]++, t)));
     }
 
     public <E> Seq<Pair<T, E>> zip(Iterable<E> es) {
