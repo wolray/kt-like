@@ -6,20 +6,24 @@ import java.util.NoSuchElementException;
 /**
  * @author wolray
  */
-public class CountItr {
-    public static <T> Iterator<T> take(Iterator<T> iterator, int n) {
-        return new Iterator<T>() {
-            int left = n;
+public abstract class CountItr<T> implements Iterator<T> {
+    int cur;
 
+    public CountItr(int cur) {
+        this.cur = cur;
+    }
+
+    public static <T> CountItr<T> take(Iterator<T> iterator, int n) {
+        return new CountItr<T>(n) {
             @Override
             public boolean hasNext() {
-                return left > 0 && iterator.hasNext();
+                return cur > 0 && iterator.hasNext();
             }
 
             @Override
             public T next() {
                 if (hasNext()) {
-                    left--;
+                    cur--;
                     return iterator.next();
                 }
                 throw new NoSuchElementException();
@@ -27,13 +31,12 @@ public class CountItr {
         };
     }
 
-    public static <T> Iterator<T> drop(Iterator<T> iterator, int n) {
-        return new Iterator<T>() {
-            int left = n;
-
+    public static <T> CountItr<T> drop(Iterator<T> iterator, int n) {
+        return new CountItr<T>(n) {
             @Override
             public boolean hasNext() {
-                while (iterator.hasNext() && left-- > 0) {
+                while (iterator.hasNext() && cur > 0) {
+                    cur--;
                     iterator.next();
                 }
                 return iterator.hasNext();
@@ -49,10 +52,8 @@ public class CountItr {
         };
     }
 
-    public static Iterator<Integer> range(int start, int until, int step) {
-        return new Iterator<Integer>() {
-            int cur = start;
-
+    public static CountItr<Integer> range(int start, int until, int step) {
+        return new CountItr<Integer>(start) {
             @Override
             public boolean hasNext() {
                 return cur < until;
@@ -67,18 +68,16 @@ public class CountItr {
         };
     }
 
-    public static <T> Iterator<T> repeat(T t, int n) {
-        return new Iterator<T>() {
-            int c = n;
-
+    public static <T> CountItr<T> repeat(T t, int n) {
+        return new CountItr<T>(n) {
             @Override
             public boolean hasNext() {
-                return c > 0;
+                return cur > 0;
             }
 
             @Override
             public T next() {
-                c--;
+                cur--;
                 return t;
             }
         };
