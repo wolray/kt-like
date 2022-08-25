@@ -34,40 +34,6 @@ public abstract class PickItr<T> implements Iterator<T> {
         return gen(() -> function.apply(seed1, seed2));
     }
 
-    public static <T> PickItr<T> take(Iterator<T> iterator, int n) {
-        return new PickItr<T>() {
-            int left = n;
-
-            @Override
-            public T pick() {
-                if (left-- == 0) {
-                    stop();
-                }
-                if (iterator.hasNext()) {
-                    return iterator.next();
-                }
-                return stop();
-            }
-        };
-    }
-
-    public static <T> PickItr<T> drop(Iterator<T> iterator, int n) {
-        return new PickItr<T>() {
-            int left = n;
-
-            @Override
-            public T pick() {
-                while (left-- > 0) {
-                    iterator.next();
-                }
-                if (iterator.hasNext()) {
-                    return iterator.next();
-                }
-                return stop();
-            }
-        };
-    }
-
     public static <T> PickItr<T> dropWhile(Iterator<T> iterator, Predicate<T> predicate) {
         return new PickItr<T>() {
             boolean done;

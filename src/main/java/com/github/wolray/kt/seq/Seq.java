@@ -62,11 +62,11 @@ public abstract class Seq<T> extends IterableExt<T> {
         if (start > until) {
             throw new IllegalArgumentException();
         }
-        return convert(() -> RepeatItr.range(start, until, step));
+        return convert(() -> CountItr.range(start, until, step));
     }
 
     public static <T> Seq<T> repeat(T t, int n) {
-        return convert(() -> RepeatItr.repeat(t, n));
+        return convert(() -> CountItr.repeat(t, n));
     }
 
     public static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
@@ -191,13 +191,13 @@ public abstract class Seq<T> extends IterableExt<T> {
     public Seq<T> take(int n) {
         return n <= 0 ? empty()
             : outRange(n) ? this
-            : convert(() -> PickItr.take(iterator(), n));
+            : convert(() -> CountItr.take(iterator(), n));
     }
 
     public Seq<T> drop(int n) {
         return n <= 0 ? this
             : outRange(n) ? empty()
-            : convert(() -> PickItr.drop(iterator(), n));
+            : convert(() -> CountItr.drop(iterator(), n));
     }
 
     public Seq<T> dropWhile(Predicate<T> predicate) {
