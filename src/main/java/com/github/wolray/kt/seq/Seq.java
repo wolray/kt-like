@@ -129,39 +129,11 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> distinct() {
-        return convert(() -> new PickItr<T>() {
-            Iterator<T> iterator = iterator();
-            Set<T> set = new HashSet<>();
-
-            @Override
-            public T pick() {
-                while (iterator.hasNext()) {
-                    T next = iterator.next();
-                    if (set.add(next)) {
-                        return next;
-                    }
-                }
-                return stop();
-            }
-        });
+        return distinctBy(it -> it);
     }
 
     public <E> Seq<T> distinctBy(Function<T, E> function) {
-        return convert(() -> new PickItr<T>() {
-            Iterator<T> iterator = iterator();
-            Set<E> set = new HashSet<>();
-
-            @Override
-            public T pick() {
-                while (iterator.hasNext()) {
-                    T next = iterator.next();
-                    if (set.add(function.apply(next))) {
-                        return next;
-                    }
-                }
-                return stop();
-            }
-        });
+        return convert(() -> PickItr.distinctBy(iterator(), function));
     }
 
     public Seq<T> takeWhile(Predicate<T> predicate) {
@@ -197,25 +169,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> dropWhile(Predicate<T> predicate) {
-        return convert(() -> new PickItr<T>() {
-            Iterator<T> iterator = iterator();
-            boolean done;
-
-            @Override
-            public T pick() {
-                while (iterator.hasNext()) {
-                    T t = iterator.next();
-                    if (done) {
-                        return t;
-                    }
-                    if (!predicate.test(t)) {
-                        done = true;
-                        return t;
-                    }
-                }
-                return stop();
-            }
-        });
+        return convert(() -> PickItr.dropWhile(iterator(), predicate));
     }
 
     public Seq<List<T>> chunked(int size) {

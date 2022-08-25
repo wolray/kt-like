@@ -3,6 +3,7 @@ package com.github.wolray.kt.seq;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -61,6 +62,44 @@ public abstract class PickItr<T> implements Iterator<T> {
                 }
                 if (iterator.hasNext()) {
                     return iterator.next();
+                }
+                return stop();
+            }
+        };
+    }
+
+    public static <T> PickItr<T> dropWhile(Iterator<T> iterator, Predicate<T> predicate) {
+        return new PickItr<T>() {
+            boolean done;
+
+            @Override
+            public T pick() {
+                while (iterator.hasNext()) {
+                    T t = iterator.next();
+                    if (done) {
+                        return t;
+                    }
+                    if (!predicate.test(t)) {
+                        done = true;
+                        return t;
+                    }
+                }
+                return stop();
+            }
+        };
+    }
+
+    public static <T, E> PickItr<T> distinctBy(Iterator<T> iterator, Function<T, E> function) {
+        return new PickItr<T>() {
+            Set<E> set = new HashSet<>();
+
+            @Override
+            public T pick() {
+                while (iterator.hasNext()) {
+                    T next = iterator.next();
+                    if (set.add(function.apply(next))) {
+                        return next;
+                    }
                 }
                 return stop();
             }
