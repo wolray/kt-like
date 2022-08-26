@@ -35,7 +35,7 @@ public abstract class CountItr<T> implements Iterator<T> {
         return new CountItr<T>(n) {
             @Override
             public boolean hasNext() {
-                while (iterator.hasNext() && cur > 0) {
+                while (cur > 0 && iterator.hasNext()) {
                     cur--;
                     iterator.next();
                 }
@@ -77,8 +77,11 @@ public abstract class CountItr<T> implements Iterator<T> {
 
             @Override
             public T next() {
-                cur--;
-                return t;
+                if (cur > 0) {
+                    cur--;
+                    return t;
+                }
+                throw new NoSuchElementException();
             }
         };
     }
