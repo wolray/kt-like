@@ -1,14 +1,12 @@
 package com.github.wolray.kt.lazy;
 
-import com.github.wolray.kt.seq.SeqScope;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
  * @author wolray
  */
-public interface LazyScope extends SeqScope {
+public interface LazyScope {
     default <T> LazyVar<T> lazyOf(Supplier<T> supplier) {
         return new LazyVar<>(supplier);
     }
@@ -19,9 +17,5 @@ public interface LazyScope extends SeqScope {
 
     default LazyJob job(Runnable runnable) {
         return new LazyJob(runnable);
-    }
-
-    default <T> LazySeq<T> lazySeq(Supplier<Iterable<T>> supplier) {
-        return new LazySeq<>(() -> seq(supplier.get()));
     }
 }

@@ -10,11 +10,11 @@ import java.util.function.Supplier;
  * @author wolray
  */
 public class Yield<T> {
-    final List<Iterable<T>> list;
+    public final List<Iterable<T>> list;
     private final int batchSize;
     private BatchList<T> cur;
 
-    Yield(int batchSize) {
+    public Yield(int batchSize) {
         this.batchSize = batchSize;
         list = new ArrayList<>();
     }
@@ -50,6 +50,6 @@ public class Yield<T> {
     }
 
     public void yieldAll(Supplier<T> supplier) {
-        yieldAll(Seq.gen(supplier));
+        yieldAll(Iterable.gen(supplier));
     }
 }

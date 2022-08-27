@@ -47,7 +47,7 @@ public class Example {
     public void tmp() {
         Function<Integer, List<String>> function = i -> Arrays.asList(Integer.toString(i).split(""));
         Stream<Integer> stream = Stream.of(11, 21, 31, 41);
-        Seq<Integer> seq = Seq.of(11, 21, 31, 41);
+        Iterable<Integer> seq = Iterable.of(11, 21, 31, 41);
         Map<Integer, List<String>> map;
         map = stream.collect(Collectors.groupingBy(i -> i % 5,
             Collectors.mapping(function,
@@ -61,7 +61,7 @@ public class Example {
     }
 
     public void seqExample() {
-        Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
+        Iterable<Integer> seq = Iterable.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
 
         List<Integer> list = seq
             .map(i -> i + 1)
@@ -75,7 +75,7 @@ public class Example {
             .onEach(System.out::println)
             .distinct()
             .distinctBy(i -> i % 10)
-            .flatMap(i -> Seq.of(i, i + 1, i + 2))
+            .flatMap(i -> Iterable.of(i, i + 1, i + 2))
             .forEach(i -> {});
 
         List<Integer> linkedList = seq.toCollection(new LinkedList<>());
