@@ -513,7 +513,6 @@ public class IterableExt {
         return () -> PickItr.window(self.iterator(), size);
     }
 
-
     public static <T, E> Iterable<E> runningFold(@This Iterable<T> self, E init, BiFunction<T, E, E> function) {
         return () -> MapItr.of(self.iterator(), new Mutable<>(init),
             (t, m) -> m.it = function.apply(t, m.it));
