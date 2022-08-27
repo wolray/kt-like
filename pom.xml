@@ -53,7 +53,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Contains-Sources>java,class</Contains-Sources>
+                            <Contains-Sources>IterableExt</Contains-Sources>
                         </manifestEntries>
                     </archive>
                 </configuration>
