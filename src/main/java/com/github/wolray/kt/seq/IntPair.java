@@ -1,8 +1,7 @@
 package com.github.wolray.kt.seq;
 
 /**
- * @author yilai
- * @since 2022/8/28
+ * @author wolray
  */
 public class IntPair<T> {
     public final int first;
