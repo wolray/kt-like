@@ -53,10 +53,14 @@ public abstract class CountItr<T> implements Iterator<T> {
     }
 
     public static CountItr<Integer> range(int start, int until, int step) {
+        if (step == 0) {
+            throw new IllegalArgumentException("zero step");
+        }
+        boolean increase = step > 0;
         return new CountItr<Integer>(start) {
             @Override
             public boolean hasNext() {
-                return cur < until;
+                return increase ? cur < until : cur > until;
             }
 
             @Override

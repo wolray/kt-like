@@ -20,6 +20,11 @@
             <version>2022.1.19</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
@@ -53,7 +58,18 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Contains-Sources>IterableExt</Contains-Sources>
+                            <Contains-Sources>
+                                Collecting,Comparing,IterableExt,Reducing,ToPrimitive,
+                                Empties,Iterables,Lazies,Maybe,ObjectExt,Predicating,Timing,Tuples,
+                                StringExt,
+                                CollectionExt,
+                                ConsumerExt,
+                                SupplierExt,
+                                ListExt,
+                                MapExt,
+                                SetExt,
+                                LoggerExt
+                            </Contains-Sources>
                         </manifestEntries>
                     </archive>
                 </configuration>
