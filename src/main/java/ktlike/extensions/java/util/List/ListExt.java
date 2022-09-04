@@ -11,18 +11,17 @@ import java.util.List;
 public class ListExt {
     @Extension
     @SafeVarargs
-    public static <T> List<T> of(T... ts) {
-        return Arrays.asList(ts);
+    public static <E> List<E> of(E... es) {
+        return Arrays.asList(es);
     }
 
     @Self
-    public static <T> List<T> put(@This List<T> self, T t) {
+    public static <E> List<E> put(@This List<E> self, E t) {
         self.add(t);
         return self;
     }
 
-    @Self
-    public static <T> List<T> putAll(@This List<T> self, Iterable<T> ts) {
+    public static <E> List<E> putAll(@This List<E> self, Iterable<E> ts) {
         ts.forEach(self::add);
         return self;
     }

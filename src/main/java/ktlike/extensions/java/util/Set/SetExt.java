@@ -12,21 +12,21 @@ import java.util.Set;
 public class SetExt {
     @Extension
     @SafeVarargs
-    public static <T> Set<T> of(T... ts) {
-        Set<T> res = new HashSet<>(ts.length);
-        res.addAll(Arrays.asList(ts));
+    public static <E> Set<E> of(E... es) {
+        Set<E> res = new HashSet<>(es.length);
+        res.addAll(Arrays.asList(es));
         return res;
     }
 
     @Self
-    public static <T> Set<T> put(@This Set<T> self, T t) {
-        self.add(t);
+    public static <E> Set<E> put(@This Set<E> self, E e) {
+        self.add(e);
         return self;
     }
 
     @Self
-    public static <T> Set<T> putAll(@This Set<T> self, Iterable<T> ts) {
-        ts.forEach(self::add);
+    public static <E> Set<E> putAll(@This Set<E> self, Iterable<E> es) {
+        es.forEach(self::add);
         return self;
     }
 }
