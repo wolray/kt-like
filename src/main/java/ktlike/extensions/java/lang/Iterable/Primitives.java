@@ -9,7 +9,7 @@ import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
 
 @Extension
-public class ToPrimitive {
+public class Primitives {
     public static <T> boolean all(@This Iterable<T> self, Predicate<T> predicate) {
         for (T t : self) {
             if (!predicate.test(t)) {
