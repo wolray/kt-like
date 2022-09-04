@@ -59,7 +59,7 @@
                     <archive>
                         <manifestEntries>
                             <Contains-Sources>
-                                Collecting,Comparing,IterableExt,Reducing,ToPrimitive,
+                                Collecting,Comparing,IterableExt,Primitives,Reducing,
                                 Empties,Iterables,Lazies,Maybe,ObjectExt,Predicating,Timing,Tuples,
                                 StringExt,
                                 CollectionExt,
