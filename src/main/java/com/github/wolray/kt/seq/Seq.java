@@ -1,5 +1,8 @@
 package com.github.wolray.kt.seq;
 
+import com.github.wolray.kt.util.Any;
+import com.github.wolray.kt.util.Functions;
+
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.Stream;
@@ -45,9 +48,8 @@ public abstract class Seq<T> extends IterableExt<T> {
         return convert(() -> PickItr.flat(iterables.iterator()));
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> Seq<T> empty() {
-        return (Seq<T>)EmptySeq.INSTANCE;
+        return convert(Collections::emptyIterator);
     }
 
     public static Seq<Integer> range(int until) {
@@ -110,9 +112,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
-        Yield<T> yield = new Yield<>(batchSize);
-        yieldConsumer.accept(yield);
-        return join(yield.list);
+        return join(Any.also(new Yield<>(batchSize), yieldConsumer).list);
     }
 
     public <E> Seq<E> recur(Function<Iterator<T>, E> function) {
@@ -214,10 +214,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> onEach(Consumer<T> consumer) {
-        return map(it -> {
-            consumer.accept(it);
-            return it;
-        });
+        return map(Functions.asUnaryOp(consumer));
     }
 
     public Seq<T> cache() {
@@ -249,21 +246,43 @@ public abstract class Seq<T> extends IterableExt<T> {
         return append(Arrays.asList(t));
     }
 
-    public Seq<IndexedValue<T>> withIndex() {
-        return convert(() -> MapItr.of(iterator(), new int[1],
-            (t, a) -> new IndexedValue<>(a[0]++, t)));
+    public Seq<IntPair<T>> withIndex() {
+        return convert(() -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(a[0]++, t)));
     }
 
     public <E> Seq<Pair<T, E>> zip(Iterable<E> es) {
-        return SeqScope.INSTANCE.zip(this, es);
+        return zip(es, Pair::new);
     }
 
-    public <B, R> Seq<R> zip(Iterable<B> es, BiFunction<T, B, R> function) {
-        return SeqScope.INSTANCE.zip(this, es, function);
+    public <B, R> Seq<R> zip(Iterable<B> bs, BiFunction<T, B, R> function) {
+        return convert(() -> new PickItr<R>() {
+            Iterator<T> ti = iterator();
+            Iterator<B> bi = bs.iterator();
+
+            @Override
+            public R pick() {
+                if (ti.hasNext() && bi.hasNext()) {
+                    return function.apply(ti.next(), bi.next());
+                }
+                return stop();
+            }
+        });
     }
 
     public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
-        return SeqScope.INSTANCE.zip(this, bs, cs);
+        return convert(() -> new PickItr<Triple<T, B, C>>() {
+            Iterator<T> ti = iterator();
+            Iterator<B> bi = bs.iterator();
+            Iterator<C> ci = cs.iterator();
+
+            @Override
+            public Triple<T, B, C> pick() {
+                if (ti.hasNext() && bi.hasNext() && ci.hasNext()) {
+                    return new Triple<>(ti.next(), bi.next(), ci.next());
+                }
+                return stop();
+            }
+        });
     }
 
     public <E> Seq<Pair<T, E>> cartesian(Iterable<E> es) {
@@ -286,19 +305,5 @@ public abstract class Seq<T> extends IterableExt<T> {
             assert iterator.hasNext() && Objects.equals(iterator.next(), t) : "mismatched";
         }
         assert !iterator.hasNext() : "exceeded";
-    }
-
-    static class EmptySeq {
-        static final Seq<Object> INSTANCE = convert(Collections::emptyIterator);
-    }
-
-    public static class IndexedValue<T> {
-        public final int index;
-        public final T value;
-
-        public IndexedValue(int index, T value) {
-            this.index = index;
-            this.value = value;
-        }
     }
 }
