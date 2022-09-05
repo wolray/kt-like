@@ -58,7 +58,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Contains-Sources>IterableExtension</Contains-Sources>
+                            <Contains-Sources>IterableExt</Contains-Sources>
                         </manifestEntries>
                     </archive>
                 </configuration>

@@ -6,7 +6,7 @@ import java.util.function.*;
 /**
  * @author wolray
  */
-public abstract class IterableExt<T> implements Iterable<T> {
+public abstract class IterableBoost<T> implements Iterable<T> {
     Integer size;
 
     void setSize(Iterable<?> iterable) {

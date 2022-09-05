@@ -11,7 +11,7 @@ import java.util.stream.StreamSupport;
 /**
  * @author wolray
  */
-public abstract class Seq<T> extends IterableExt<T> {
+public abstract class Seq<T> extends IterableBoost<T> {
     static <T> Seq<T> convert(Iterable<T> iterable) {
         return new Seq<T>() {
             @Override
@@ -219,7 +219,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public Seq<T> cache() {
-        return cache(IterableExt::toBatchList);
+        return cache(IterableBoost::toBatchList);
     }
 
     public Seq<T> cache(int batchSize) {
