@@ -1,5 +1,10 @@
-package com.github.wolray.kt.seq;
+package com.github.wolray.kt.util;
 
+import com.github.wolray.kt.seq.Pair;
+import com.github.wolray.kt.seq.Seq;
+import com.github.wolray.kt.seq.Triple;
+
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -7,26 +12,25 @@ import java.util.function.BiFunction;
 /**
  * @author wolray
  */
-public interface SeqScope {
-    SeqScope INSTANCE = new SeqScope() {};
-
-    default <T> Seq<T> seq(T[] ts) {
-        return Seq.of(ts);
+public class Iterables {
+    public static <T> Seq<T> seq(Iterable<T> iterable) {
+        return Seq.of(iterable);
     }
 
-    default <T> Seq<T> seq(Iterable<T> ts) {
-        return Seq.of(ts);
+    @SafeVarargs
+    public static <T> Seq<T> seq(T... ts) {
+        return Seq.of(Arrays.asList(ts));
     }
 
-    default <K, V> Seq<Map.Entry<K, V>> seq(Map<K, V> ts) {
-        return Seq.of(ts);
+    public static <K, V> Seq<Map.Entry<K, V>> seq(Map<K, V> map) {
+        return Seq.of(map.entrySet());
     }
 
-    default <A, B> Seq<Pair<A, B>> zip(Iterable<A> as, Iterable<B> bs) {
+    public static <A, B> Seq<Pair<A, B>> zip(Iterable<A> as, Iterable<B> bs) {
         return zip(as, bs, Pair::new);
     }
 
-    default <A, B, R> Seq<R> zip(Iterable<A> as, Iterable<B> bs, BiFunction<A, B, R> function) {
+    public static <A, B, R> Seq<R> zip(Iterable<A> as, Iterable<B> bs, BiFunction<A, B, R> function) {
         return Seq.of(() -> new Iterator<R>() {
             Iterator<A> ai = as.iterator();
             Iterator<B> bi = bs.iterator();
@@ -43,7 +47,7 @@ public interface SeqScope {
         });
     }
 
-    default <A, B, C> Seq<Triple<A, B, C>> zip(Iterable<A> as, Iterable<B> bs, Iterable<C> cs) {
+    public static <A, B, C> Seq<Triple<A, B, C>> zip(Iterable<A> as, Iterable<B> bs, Iterable<C> cs) {
         return Seq.of(() -> new Iterator<Triple<A, B, C>>() {
             Iterator<A> ai = as.iterator();
             Iterator<B> bi = bs.iterator();
@@ -61,11 +65,11 @@ public interface SeqScope {
         });
     }
 
-    default <A, B> Pair<Seq<A>, Seq<B>> unzip(Seq<Pair<A, B>> seq) {
+    public static <A, B> Pair<Seq<A>, Seq<B>> unzip(Seq<Pair<A, B>> seq) {
         return new Pair<>(seq.map(p -> p.first), seq.map(p -> p.second));
     }
 
-    default <A, B, C> Triple<Seq<A>, Seq<B>, Seq<C>> unzip3(Seq<Triple<A, B, C>> seq) {
+    public static <A, B, C> Triple<Seq<A>, Seq<B>, Seq<C>> unzip3(Seq<Triple<A, B, C>> seq) {
         return new Triple<>(seq.map(p -> p.first), seq.map(p -> p.second), seq.map(p -> p.third));
     }
 }

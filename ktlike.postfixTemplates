@@ -1,0 +1,33 @@
+.asList : array to list
+    ARRAY -> Arrays.asList($expr$) [USE_STATIC_IMPORTS]
+
+.join : join to string
+    java.lang.String -> String.join($expr$, $end$)
+
+.println : println
+    ANY -> Any.println($expr$) [USE_STATIC_IMPORTS]
+
+.also : also
+    ANY -> Any.also($expr$, $end$) [USE_STATIC_IMPORTS]
+
+.let : let
+    ANY -> Any.let($expr$, $end$) [USE_STATIC_IMPORTS]
+
+.orElse : or else
+    ANY -> Any.orElse($expr$, $end$) [USE_STATIC_IMPORTS]
+
+.seq : seq
+    java.lang.Iterable -> Iterables.seq($expr$) [USE_STATIC_IMPORTS]
+    java.util.Map -> Iterables.seq($expr$) [USE_STATIC_IMPORTS]
+    ARRAY -> Iterables.seq($expr$) [USE_STATIC_IMPORTS]
+
+.isNullOrEmpty : check null or empty
+    java.lang.String -> Checks.isNullOrEmpty($expr$) [USE_STATIC_IMPORTS]
+    java.util.Collection -> Checks.isNullOrEmpty($expr$) [USE_STATIC_IMPORTS]
+    java.util.Map -> Checks.isNullOrEmpty($expr$) [USE_STATIC_IMPORTS]
+
+.onTrue : do if true
+    BOOLEAN -> Booleans.onTrue($expr$, $end$) [USE_STATIC_IMPORTS]
+
+.onFalse : do if false
+    BOOLEAN -> Booleans.onFalse($expr$, $end$) [USE_STATIC_IMPORTS]

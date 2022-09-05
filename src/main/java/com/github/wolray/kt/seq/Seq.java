@@ -2,6 +2,7 @@ package com.github.wolray.kt.seq;
 
 import com.github.wolray.kt.util.Any;
 import com.github.wolray.kt.util.Functions;
+import com.github.wolray.kt.util.Iterables;
 
 import java.util.*;
 import java.util.function.*;
@@ -248,15 +249,15 @@ public abstract class Seq<T> extends IterableBoost<T> {
     }
 
     public <B> Seq<Pair<T, B>> zip(Iterable<B> bs) {
-        return SeqScope.INSTANCE.zip(this, bs);
+        return Iterables.zip(this, bs);
     }
 
     public <B, R> Seq<R> zip(Iterable<B> bs, BiFunction<T, B, R> function) {
-        return SeqScope.INSTANCE.zip(this, bs, function);
+        return Iterables.zip(this, bs, function);
     }
 
     public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
-        return SeqScope.INSTANCE.zip(this, bs, cs);
+        return Iterables.zip(this, bs, cs);
     }
 
     public <E> Seq<Pair<T, E>> cartesian(Iterable<E> es) {
