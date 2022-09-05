@@ -61,9 +61,6 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public static Seq<Integer> range(int start, int until, int step) {
-        if (start > until) {
-            throw new IllegalArgumentException();
-        }
         return convert(() -> CountItr.range(start, until, step));
     }
 
@@ -73,6 +70,10 @@ public abstract class Seq<T> extends IterableExt<T> {
 
     public static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
         return convert(() -> PickItr.gen(seedSupplier.get(), function));
+    }
+
+    public static <T> Seq<T> genUntilNull(Supplier<T> supplier) {
+        return gen(Functions.orBy(supplier, PickItr::stop));
     }
 
     public static <T> Seq<T> gen(Supplier<T> supplier) {
@@ -237,8 +238,8 @@ public abstract class Seq<T> extends IterableExt<T> {
         return join(map(function));
     }
 
-    public Seq<T> append(Iterable<T> seq) {
-        return join(Arrays.asList(this, seq));
+    public Seq<T> append(Iterable<T> iterable) {
+        return join(Arrays.asList(this, iterable));
     }
 
     @SafeVarargs
@@ -251,38 +252,15 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <E> Seq<Pair<T, E>> zip(Iterable<E> es) {
-        return zip(es, Pair::new);
+        return SeqScope.INSTANCE.zip(this, es);
     }
 
     public <B, R> Seq<R> zip(Iterable<B> bs, BiFunction<T, B, R> function) {
-        return convert(() -> new PickItr<R>() {
-            Iterator<T> ti = iterator();
-            Iterator<B> bi = bs.iterator();
-
-            @Override
-            public R pick() {
-                if (ti.hasNext() && bi.hasNext()) {
-                    return function.apply(ti.next(), bi.next());
-                }
-                return stop();
-            }
-        });
+        return SeqScope.INSTANCE.zip(this, es, function);
     }
 
     public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
-        return convert(() -> new PickItr<Triple<T, B, C>>() {
-            Iterator<T> ti = iterator();
-            Iterator<B> bi = bs.iterator();
-            Iterator<C> ci = cs.iterator();
-
-            @Override
-            public Triple<T, B, C> pick() {
-                if (ti.hasNext() && bi.hasNext() && ci.hasNext()) {
-                    return new Triple<>(ti.next(), bi.next(), ci.next());
-                }
-                return stop();
-            }
-        });
+        return SeqScope.INSTANCE.zip(this, bs, cs);
     }
 
     public <E> Seq<Pair<T, E>> cartesian(Iterable<E> es) {
@@ -290,7 +268,7 @@ public abstract class Seq<T> extends IterableExt<T> {
     }
 
     public <E, R> Seq<R> cartesian(Iterable<E> es, BiFunction<T, E, R> function) {
-        Seq<E> seq = of(es);
+        Seq<E> seq = convert(es);
         return flatMap(t -> seq.map(e -> function.apply(t, e)));
     }
 
