@@ -9,4 +9,10 @@ public class IterableExtension {
     public static <T> Seq<T> seq(@This Iterable<T> self) {
         return Seq.of(self);
     }
+
+    @Extension
+    @SafeVarargs
+    public static <T> Seq<T> of(T... ts) {
+        return Seq.of(ts);
+    }
 }
