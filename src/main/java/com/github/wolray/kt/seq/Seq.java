@@ -98,14 +98,14 @@ public abstract class Seq<T> extends IterableExt<T> {
 
     public static Seq<Integer> gen(int seed1, int seed2, IntBinaryOperator operator) {
         return join(Arrays.asList(seed1, seed2),
-            convert(() -> PickItr.gen(new int[]{seed1, seed2}, a ->
-                a[1] = operator.applyAsInt(a[0], a[0] = a[1]))));
+            () -> PickItr.gen(new int[]{seed1, seed2}, a ->
+                a[1] = operator.applyAsInt(a[0], a[0] = a[1])));
     }
 
     public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
         return join(Arrays.asList(seed1, seed2),
-            convert(() -> PickItr.gen(new MutablePair<>(seed1, seed2), p ->
-                p.second = operator.apply(p.first, p.first = p.second))));
+            () -> PickItr.gen(new MutablePair<>(seed1, seed2), p ->
+                p.second = operator.apply(p.first, p.first = p.second)));
     }
 
     public static <T> Seq<T> by(Consumer<Yield<T>> yieldConsumer) {
@@ -251,12 +251,12 @@ public abstract class Seq<T> extends IterableExt<T> {
         return convert(() -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(a[0]++, t)));
     }
 
-    public <E> Seq<Pair<T, E>> zip(Iterable<E> es) {
-        return SeqScope.INSTANCE.zip(this, es);
+    public <B> Seq<Pair<T, B>> zip(Iterable<B> bs) {
+        return SeqScope.INSTANCE.zip(this, bs);
     }
 
     public <B, R> Seq<R> zip(Iterable<B> bs, BiFunction<T, B, R> function) {
-        return SeqScope.INSTANCE.zip(this, es, function);
+        return SeqScope.INSTANCE.zip(this, bs, function);
     }
 
     public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
