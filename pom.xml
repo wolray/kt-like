@@ -15,11 +15,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>systems.manifold</groupId>
-            <artifactId>manifold-ext-rt</artifactId>
-            <version>2022.1.19</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.36</version>
@@ -34,35 +29,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <compilerArgs>
-                        <arg>-Xplugin:Manifold</arg>
-                    </compilerArgs>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>systems.manifold</groupId>
-                            <artifactId>manifold-ext</artifactId>
-                            <version>2022.1.19</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Contains-Sources>IterableExt</Contains-Sources>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>

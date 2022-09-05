@@ -28,5 +28,4 @@ public class Functions {
             return t != null ? t : defaultGetter.get();
         };
     }
-
 }

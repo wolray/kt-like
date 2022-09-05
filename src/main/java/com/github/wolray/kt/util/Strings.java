@@ -7,11 +7,7 @@ import java.util.function.Consumer;
  * @author worlay
  */
 public class Strings {
-    public static boolean isNullOrEmpty(String s) {
-        return s == null || s.isEmpty();
-    }
-
-    public static String join(String sep, Consumer<StringJoiner> consumer) {
+    public static String joinBy(String sep, Consumer<StringJoiner> consumer) {
         return Any.also(new StringJoiner(sep), consumer).toString();
     }
 }

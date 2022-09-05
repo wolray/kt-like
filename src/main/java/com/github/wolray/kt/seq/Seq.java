@@ -35,10 +35,6 @@ public abstract class Seq<T> extends IterableBoost<T> {
         return of(Arrays.asList(ts));
     }
 
-    public static <K, V> Seq<Map.Entry<K, V>> of(Map<K, V> map) {
-        return of(map.entrySet());
-    }
-
     @SafeVarargs
     public static <T> Seq<T> join(Iterable<T>... iterable) {
         return join(Arrays.asList(iterable));
