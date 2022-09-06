@@ -12,125 +12,112 @@ import java.util.stream.StreamSupport;
 /**
  * @author wolray
  */
-public abstract class Seq<T> extends IterableBoost<T> {
-    static <T> Seq<T> convert(Iterable<T> iterable) {
-        return new Seq<T>() {
-            @Override
-            public Iterator<T> iterator() {
-                return iterable.iterator();
-            }
-        };
-    }
-
-    public static <T> Seq<T> of(Iterable<T> iterable) {
+public interface Seq<T> extends IterableBoost<T> {
+    static <T> Seq<T> of(Iterable<T> iterable) {
         if (iterable instanceof Seq<?>) {
             return (Seq<T>)iterable;
         }
-        Seq<T> seq = convert(iterable);
-        seq.setSize(iterable);
-        return seq;
+        if (iterable instanceof Collection<?>) {
+            return new Cached<>((Collection<T>)iterable);
+        }
+        return iterable::iterator;
     }
 
     @SafeVarargs
-    public static <T> Seq<T> of(T... ts) {
+    static <T> Seq<T> of(T... ts) {
         return of(Arrays.asList(ts));
     }
 
     @SafeVarargs
-    public static <T> Seq<T> join(Iterable<T>... iterable) {
+    static <T> Seq<T> join(Iterable<T>... iterable) {
         return join(Arrays.asList(iterable));
     }
 
-    public static <T> Seq<T> join(Iterable<? extends Iterable<T>> iterables) {
-        return convert(() -> PickItr.flat(iterables.iterator()));
+    static <T> Seq<T> join(Iterable<? extends Iterable<T>> iterables) {
+        return () -> PickItr.flat(iterables.iterator());
     }
 
-    public static <T> Seq<T> empty() {
-        return convert(Collections::emptyIterator);
+    static <T> Seq<T> empty() {
+        return Collections::emptyIterator;
     }
 
-    public static Seq<Integer> range(int until) {
+    static Seq<Integer> range(int until) {
         return range(0, until, 1);
     }
 
-    public static Seq<Integer> range(int start, int until) {
+    static Seq<Integer> range(int start, int until) {
         return range(start, until, 1);
     }
 
-    public static Seq<Integer> range(int start, int until, int step) {
-        return convert(() -> CountItr.range(start, until, step));
+    static Seq<Integer> range(int start, int until, int step) {
+        return () -> CountItr.range(start, until, step);
     }
 
-    public static <T> Seq<T> repeat(T t, int n) {
-        return convert(() -> CountItr.repeat(t, n));
+    static <T> Seq<T> repeat(T t, int n) {
+        return () -> CountItr.repeat(t, n);
     }
 
-    public static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
-        return convert(() -> PickItr.gen(seedSupplier.get(), function));
+    static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
+        return () -> PickItr.gen(seedSupplier.get(), function);
     }
 
-    public static <T> Seq<T> genUntilNull(Supplier<T> supplier) {
+    static <T> Seq<T> genUntilNull(Supplier<T> supplier) {
         return gen(Functions.orBy(supplier, PickItr::stop));
     }
 
-    public static <T> Seq<T> gen(Supplier<T> supplier) {
-        return convert(() -> PickItr.gen(supplier));
+    static <T> Seq<T> gen(Supplier<T> supplier) {
+        return () -> PickItr.gen(supplier);
     }
 
-    public static Seq<Integer> gen(int seed, IntUnaryOperator operator) {
-        return convert(() -> PickItr.gen(new int[]{seed}, a -> {
+    static Seq<Integer> gen(int seed, IntUnaryOperator operator) {
+        return () -> PickItr.gen(new int[]{seed}, a -> {
             int t = a[0];
             a[0] = operator.applyAsInt(a[0]);
             return t;
-        }));
+        });
     }
 
-    public static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return convert(() -> PickItr.gen(new Mutable<>(seed), m -> {
+    static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
+        return () -> PickItr.gen(new Mutable<>(seed), m -> {
             T t = m.it;
             m.it = operator.apply(m.it);
             return t;
-        }));
+        });
     }
 
-    public static Seq<Integer> gen(int seed1, int seed2, IntBinaryOperator operator) {
+    static Seq<Integer> gen(int seed1, int seed2, IntBinaryOperator operator) {
         return join(Arrays.asList(seed1, seed2),
             () -> PickItr.gen(new int[]{seed1, seed2}, a ->
                 a[1] = operator.applyAsInt(a[0], a[0] = a[1])));
     }
 
-    public static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
+    static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
         return join(Arrays.asList(seed1, seed2),
             () -> PickItr.gen(new MutablePair<>(seed1, seed2), p ->
                 p.second = operator.apply(p.first, p.first = p.second)));
     }
 
-    public static <T> Seq<T> by(Consumer<Yield<T>> yieldConsumer) {
+    static <T> Seq<T> by(Consumer<Yield<T>> yieldConsumer) {
         return by(10, yieldConsumer);
     }
 
-    public static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
+    static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
         return join(Any.also(new Yield<>(batchSize), yieldConsumer).list);
     }
 
-    public <E> Seq<E> recur(Function<Iterator<T>, E> function) {
+    default <E> Seq<E> recur(Function<Iterator<T>, E> function) {
         return recur(this::iterator, function);
     }
 
-    @Override
-    public String toString() {
-        return join("=>", String::valueOf);
+    default <S, E> Seq<E> map(Supplier<S> stateSupplier, BiFunction<T, S, E> function) {
+        return () -> MapItr.of(iterator(), stateSupplier.get(), function);
     }
 
-    public <S, E> Seq<E> map(Supplier<S> stateSupplier, BiFunction<T, S, E> function) {
-        return convert(() -> MapItr.of(iterator(), stateSupplier.get(), function));
+    default <E> Seq<E> map(Function<T, E> function) {
+        return () -> MapItr.of(iterator(), function);
     }
 
-    public <E> Seq<E> map(Function<T, E> function) {
-        return convert(() -> MapItr.of(iterator(), function));
-    }
-
-    public <E> Seq<E> mapNotNull(Function<T, E> function) {
+    default <E> Seq<E> mapNotNull(Function<T, E> function) {
         return recur(itr -> {
             while (itr.hasNext()) {
                 E e = function.apply(itr.next());
@@ -142,7 +129,7 @@ public abstract class Seq<T> extends IterableBoost<T> {
         });
     }
 
-    public Seq<T> filter(Predicate<T> predicate) {
+    default Seq<T> filter(Predicate<T> predicate) {
         return recur(itr -> {
             while (itr.hasNext()) {
                 T t = itr.next();
@@ -154,19 +141,19 @@ public abstract class Seq<T> extends IterableBoost<T> {
         });
     }
 
-    public Seq<T> filterNotNull() {
+    default Seq<T> filterNotNull() {
         return filter(Objects::nonNull);
     }
 
-    public Seq<T> distinct() {
+    default Seq<T> distinct() {
         return distinctBy(it -> it);
     }
 
-    public <E> Seq<T> distinctBy(Function<T, E> function) {
-        return convert(() -> PickItr.distinctBy(iterator(), function));
+    default <E> Seq<T> distinctBy(Function<T, E> function) {
+        return () -> PickItr.distinctBy(iterator(), function);
     }
 
-    public Seq<T> takeWhile(Predicate<T> predicate) {
+    default Seq<T> takeWhile(Predicate<T> predicate) {
         return recur(itr -> {
             if (itr.hasNext()) {
                 T t = itr.next();
@@ -178,107 +165,121 @@ public abstract class Seq<T> extends IterableBoost<T> {
         });
     }
 
-    public Seq<T> untilNull() {
+    default Seq<T> untilNull() {
         return takeWhile(Objects::nonNull);
     }
 
-    private boolean outRange(int n) {
-        return size != null && n >= size;
-    }
-
-    public Seq<T> take(int n) {
+    default Seq<T> take(int n) {
         return n <= 0 ? empty()
-            : outRange(n) ? this
-            : convert(() -> CountItr.take(iterator(), n));
+            : Cached.outSize(this, n) ? this
+            : () -> CountItr.take(iterator(), n);
     }
 
-    public Seq<T> drop(int n) {
+    default Seq<T> drop(int n) {
         return n <= 0 ? this
-            : outRange(n) ? empty()
-            : convert(() -> CountItr.drop(iterator(), n));
+            : Cached.outSize(this, n) ? empty()
+            : () -> CountItr.drop(iterator(), n);
     }
 
-    public Seq<T> dropWhile(Predicate<T> predicate) {
-        return convert(() -> PickItr.dropWhile(iterator(), predicate));
+    default Seq<T> dropWhile(Predicate<T> predicate) {
+        return () -> PickItr.dropWhile(iterator(), predicate);
     }
 
-    public Seq<List<T>> chunked(int size) {
-        return convert(() -> PickItr.window(iterator(), size));
+    default Seq<List<T>> chunked(int size) {
+        return () -> PickItr.window(iterator(), size);
     }
 
-    public <E> Seq<E> runningFold(E init, BiFunction<T, E, E> function) {
-        return convert(() -> MapItr.of(iterator(), new Mutable<>(init),
-            (t, m) -> m.it = function.apply(t, m.it)));
+    default <E> Seq<E> runningFold(E init, BiFunction<T, E, E> function) {
+        return () -> MapItr.of(iterator(), new Mutable<>(init),
+            (t, m) -> m.it = function.apply(t, m.it));
     }
 
-    public Seq<T> onEach(Consumer<T> consumer) {
+    default Seq<T> onEach(Consumer<T> consumer) {
         return map(Functions.asUnaryOp(consumer));
     }
 
-    public Seq<T> cache() {
-        return cache(IterableBoost::toBatchList);
+    default Seq<T> cache() {
+        return cache(10);
     }
 
-    public Seq<T> cache(int batchSize) {
-        return cache(it -> it.toBatchList(batchSize));
+    default Seq<T> cache(int batchSize) {
+        return this instanceof Seq.Cached ? this : new Cached<>(toBatchList(batchSize));
     }
 
-    public Seq<T> cache(Function<Seq<T>, List<T>> byList) {
-        return size != null ? this : of(byList.apply(this));
-    }
-
-    public <E> E let(Function<Seq<T>, E> function) {
+    default <E> E let(Function<Seq<T>, E> function) {
         return function.apply(this);
     }
 
-    public <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
+    default <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
         return join(map(function));
     }
 
-    public Seq<T> append(Iterable<T> iterable) {
+    default Seq<T> append(Iterable<T> iterable) {
         return join(Arrays.asList(this, iterable));
     }
 
-    @SafeVarargs
-    public final Seq<T> append(T... t) {
+    @SuppressWarnings("unchecked")
+    default Seq<T> append(T... t) {
         return append(Arrays.asList(t));
     }
 
-    public Seq<IntPair<T>> withIndex() {
-        return convert(() -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(a[0]++, t)));
+    default Seq<IntPair<T>> withIndex() {
+        return () -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(a[0]++, t));
     }
 
-    public <B> Seq<Pair<T, B>> zip(Iterable<B> bs) {
+    default <B> Seq<Pair<T, B>> zip(Iterable<B> bs) {
         return Iterables.zip(this, bs);
     }
 
-    public <B, R> Seq<R> zip(Iterable<B> bs, BiFunction<T, B, R> function) {
+    default <B, R> Seq<R> zip(Iterable<B> bs, BiFunction<T, B, R> function) {
         return Iterables.zip(this, bs, function);
     }
 
-    public <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
+    default <B, C> Seq<Triple<T, B, C>> zip(Iterable<B> bs, Iterable<C> cs) {
         return Iterables.zip(this, bs, cs);
     }
 
-    public <E> Seq<Pair<T, E>> cartesian(Iterable<E> es) {
+    default <E> Seq<Pair<T, E>> cartesian(Iterable<E> es) {
         return cartesian(es, Pair::new);
     }
 
-    public <E, R> Seq<R> cartesian(Iterable<E> es, BiFunction<T, E, R> function) {
-        Seq<E> seq = convert(es);
+    default <E, R> Seq<R> cartesian(Iterable<E> es, BiFunction<T, E, R> function) {
+        Seq<E> seq = es::iterator;
         return flatMap(t -> seq.map(e -> function.apply(t, e)));
     }
 
-    public Stream<T> stream(boolean parallel) {
+    default Stream<T> stream(boolean parallel) {
         return StreamSupport.stream(spliterator(), parallel);
     }
 
-    @SafeVarargs
-    public final void assertTo(T... ts) {
+    @SuppressWarnings("unchecked")
+    default void assertTo(T... ts) {
         Iterator<T> iterator = iterator();
         for (T t : ts) {
             assert iterator.hasNext() && Objects.equals(iterator.next(), t) : "mismatched";
         }
         assert !iterator.hasNext() : "exceeded";
+    }
+
+    class Cached<T> implements Seq<T> {
+        private final Collection<T> collection;
+
+        public Cached(Collection<T> collection) {
+            this.collection = collection;
+        }
+
+        static boolean outSize(IterableBoost<?> boost, int n) {
+            return boost instanceof Cached && n >= boost.sizeOrDefault();
+        }
+
+        @Override
+        public int sizeOrDefault() {
+            return collection.size();
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            return collection.iterator();
+        }
     }
 }

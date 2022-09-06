@@ -13,7 +13,7 @@ public class SeqTest {
     @Test
     public void testResult() {
         Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
-        System.out.println(seq);
+        System.out.println(seq.toList());
         Predicate<Integer> predicate = i -> (i & 1) == 0;
         seq.filter(predicate).assertTo(0, 2, 4, 6, 10, 12);
         seq.dropWhile(predicate).assertTo(1, 6, 3, 5, 7, 10, 11, 12);
@@ -43,9 +43,9 @@ public class SeqTest {
     @Test
     public void testChunked() {
         List<Integer> list = Arrays.asList(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
-        System.out.println(Seq.of(list).chunked(2));
-        System.out.println(Seq.of(list).chunked(3));
-        System.out.println(Seq.of(list).chunked(4));
-        System.out.println(Seq.of(list).chunked(5));
+        System.out.println(Seq.of(list).chunked(2).toList());
+        System.out.println(Seq.of(list).chunked(3).toList());
+        System.out.println(Seq.of(list).chunked(4).toList());
+        System.out.println(Seq.of(list).chunked(5).toList());
     }
 }

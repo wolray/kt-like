@@ -6,21 +6,13 @@ import java.util.function.*;
 /**
  * @author wolray
  */
-public abstract class IterableBoost<T> implements Iterable<T> {
-    Integer size;
-
-    void setSize(Iterable<?> iterable) {
-        if (iterable instanceof Collection<?>) {
-            size = ((Collection<?>)iterable).size();
-        }
+public interface IterableBoost<T> extends Iterable<T> {
+    default int sizeOrDefault() {
+        return 10;
     }
 
-    int sizeOrDefault() {
-        return size != null ? size : 10;
-    }
-
-    public T get(int index) {
-        if (index < 0 || size != null && index >= size) {
+    default T get(int index) {
+        if (Seq.Cached.outSize(this, index)) {
             throw new IndexOutOfBoundsException(Integer.toString(index));
         }
         for (T t : this) {
@@ -31,11 +23,11 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return null;
     }
 
-    public <K> Grouping<T, K> groupBy(Function<T, K> kFunction) {
+    default <K> Grouping<T, K> groupBy(Function<T, K> kFunction) {
         return new Grouping<>(this, kFunction);
     }
 
-    public <E> E fold(E init, BiFunction<E, T, E> function) {
+    default <E> E fold(E init, BiFunction<E, T, E> function) {
         E acc = init;
         for (T t : this) {
             acc = function.apply(acc, t);
@@ -43,18 +35,18 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return acc;
     }
 
-    public <E> E foldBy(E des, BiConsumer<E, T> consumer) {
+    default <E> E foldBy(E des, BiConsumer<E, T> consumer) {
         for (T t : this) {
             consumer.accept(des, t);
         }
         return des;
     }
 
-    public List<T> filterTo(Predicate<T> predicate) {
+    default List<T> filterTo(Predicate<T> predicate) {
         return filterTo(new ArrayList<>(), predicate);
     }
 
-    public List<T> filterTo(List<T> des, Predicate<T> predicate) {
+    default List<T> filterTo(List<T> des, Predicate<T> predicate) {
         for (T t : this) {
             if (predicate.test(t)) {
                 des.add(t);
@@ -63,74 +55,74 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return des;
     }
 
-    public <K, V> Map<K, V> toMap(Function<T, K> kFunction, Function<T, V> vFunction) {
+    default <K, V> Map<K, V> toMap(Function<T, K> kFunction, Function<T, V> vFunction) {
         return toMap(new HashMap<>(sizeOrDefault()), kFunction, vFunction);
     }
 
-    public <K> Map<K, T> toMapBy(Function<T, K> kFunction) {
+    default <K> Map<K, T> toMapBy(Function<T, K> kFunction) {
         return toMapBy(new HashMap<>(sizeOrDefault()), kFunction);
     }
 
-    public <V> Map<T, V> toMapWith(Function<T, V> vFunction) {
+    default <V> Map<T, V> toMapWith(Function<T, V> vFunction) {
         return toMapWith(new HashMap<>(sizeOrDefault()), vFunction);
     }
 
-    public <K, V> Map<K, V> toMap(Map<K, V> des,
+    default <K, V> Map<K, V> toMap(Map<K, V> des,
         Function<T, K> kFunction,
         Function<T, V> vFunction) {
         return foldBy(des, (res, t) ->
             res.put(kFunction.apply(t), vFunction.apply(t)));
     }
 
-    public <K> Map<K, T> toMapBy(Map<K, T> des, Function<T, K> kFunction) {
+    default <K> Map<K, T> toMapBy(Map<K, T> des, Function<T, K> kFunction) {
         return foldBy(des, (res, t) -> res.put(kFunction.apply(t), t));
     }
 
-    public <V> Map<T, V> toMapWith(Map<T, V> des, Function<T, V> vFunction) {
+    default <V> Map<T, V> toMapWith(Map<T, V> des, Function<T, V> vFunction) {
         return foldBy(des, (res, t) -> res.put(t, vFunction.apply(t)));
     }
 
-    public <E> List<E> mapTo(Function<T, E> function) {
+    default <E> List<E> mapTo(Function<T, E> function) {
         return toCollection(new ArrayList<>(sizeOrDefault()), function);
     }
 
-    public <E> List<E> mapTo(List<E> des, Function<T, E> function) {
+    default <E> List<E> mapTo(List<E> des, Function<T, E> function) {
         return toCollection(des, function);
     }
 
-    public Set<T> toSet() {
+    default Set<T> toSet() {
         return toCollection(new HashSet<>(sizeOrDefault()));
     }
 
-    public <E> Set<E> toSet(Function<T, E> function) {
+    default <E> Set<E> toSet(Function<T, E> function) {
         return toCollection(new HashSet<>(sizeOrDefault()), function);
     }
 
-    public List<T> toList() {
+    default List<T> toList() {
         return toCollection(new ArrayList<>(sizeOrDefault()));
     }
 
-    public List<T> toSinglyList() {
+    default List<T> toSinglyList() {
         return toCollection(new SinglyList<>());
     }
 
-    public List<T> toBatchList() {
+    default List<T> toBatchList() {
         return toCollection(new BatchList<>());
     }
 
-    public List<T> toBatchList(int batchSize) {
+    default List<T> toBatchList(int batchSize) {
         return toCollection(new BatchList<>(batchSize));
     }
 
-    public <C extends Collection<T>> C toCollection(C des) {
+    default <C extends Collection<T>> C toCollection(C des) {
         return foldBy(des, Collection::add);
     }
 
-    public <E, C extends Collection<E>> C toCollection(C des, Function<T, E> function) {
+    default <E, C extends Collection<E>> C toCollection(C des, Function<T, E> function) {
         return foldBy(des, (res, t) -> res.add(function.apply(t)));
     }
 
-    public String join(String sep, Function<T, String> function) {
+    default String join(String sep, Function<T, String> function) {
         StringJoiner joiner = new StringJoiner(sep);
         for (T t : this) {
             joiner.add(function.apply(t));
@@ -138,7 +130,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return joiner.toString();
     }
 
-    public <E> void zipWith(Iterable<E> es, BiConsumer<T, E> consumer) {
+    default <E> void zipWith(Iterable<E> es, BiConsumer<T, E> consumer) {
         Iterator<T> ti = iterator();
         Iterator<E> ei = es.iterator();
         while (ti.hasNext() && ei.hasNext()) {
@@ -146,14 +138,14 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         }
     }
 
-    public void forEachIndexed(BiConsumer<Integer, T> consumer) {
+    default void forEachIndexed(BiConsumer<Integer, T> consumer) {
         int index = 0;
         for (T t : this) {
             consumer.accept(index++, t);
         }
     }
 
-    public Pair<List<T>, List<T>> partition(Predicate<T> predicate) {
+    default Pair<List<T>, List<T>> partition(Predicate<T> predicate) {
         List<T> trueList = new BatchList<>();
         List<T> falseList = new BatchList<>();
         for (T t : this) {
@@ -166,7 +158,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return new Pair<>(trueList, falseList);
     }
 
-    public boolean all(Predicate<T> predicate) {
+    default boolean all(Predicate<T> predicate) {
         for (T t : this) {
             if (!predicate.test(t)) {
                 return false;
@@ -175,7 +167,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return true;
     }
 
-    public boolean any(Predicate<T> predicate) {
+    default boolean any(Predicate<T> predicate) {
         for (T t : this) {
             if (predicate.test(t)) {
                 return true;
@@ -184,7 +176,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return false;
     }
 
-    public boolean none(Predicate<T> predicate) {
+    default boolean none(Predicate<T> predicate) {
         for (T t : this) {
             if (predicate.test(t)) {
                 return false;
@@ -193,19 +185,15 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return true;
     }
 
-    public int count() {
-        if (size != null) {
-            return size;
-        }
+    default int count() {
         int c = 0;
         for (T ignored : this) {
             c++;
         }
-        size = c;
         return c;
     }
 
-    public int count(Predicate<T> predicate) {
+    default int count(Predicate<T> predicate) {
         int c = 0;
         for (T t : this) {
             if (predicate.test(t)) {
@@ -215,7 +203,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return c;
     }
 
-    public double sum(ToDoubleFunction<T> function) {
+    default double sum(ToDoubleFunction<T> function) {
         double res = 0;
         for (T t : this) {
             res += function.applyAsDouble(t);
@@ -223,7 +211,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return res;
     }
 
-    public int sumInt(ToIntFunction<T> function) {
+    default int sumInt(ToIntFunction<T> function) {
         int res = 0;
         for (T t : this) {
             res += function.applyAsInt(t);
@@ -231,7 +219,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return res;
     }
 
-    public long sumLong(ToLongFunction<T> function) {
+    default long sumLong(ToLongFunction<T> function) {
         long res = 0;
         for (T t : this) {
             res += function.applyAsLong(t);
@@ -239,7 +227,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return res;
     }
 
-    public double average(ToDoubleFunction<T> function) {
+    default double average(ToDoubleFunction<T> function) {
         double res = 0;
         int count = 0;
         for (T t : this) {
@@ -249,28 +237,28 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return count > 0 ? res / count : 0;
     }
 
-    public DoubleSummaryStatistics summarize(ToDoubleFunction<T> function) {
+    default DoubleSummaryStatistics summarize(ToDoubleFunction<T> function) {
         return foldBy(new DoubleSummaryStatistics(), (stat, t) -> stat.accept(function.applyAsDouble(t)));
     }
 
-    public IntSummaryStatistics summarizeInt(ToIntFunction<T> function) {
+    default IntSummaryStatistics summarizeInt(ToIntFunction<T> function) {
         return foldBy(new IntSummaryStatistics(), (stat, t) -> stat.accept(function.applyAsInt(t)));
     }
 
-    public LongSummaryStatistics summarizeLong(ToLongFunction<T> function) {
+    default LongSummaryStatistics summarizeLong(ToLongFunction<T> function) {
         return foldBy(new LongSummaryStatistics(), (stat, t) -> stat.accept(function.applyAsLong(t)));
     }
 
-    public T first() {
+    default T first() {
         Iterator<T> iterator = iterator();
         return iterator.hasNext() ? iterator.next() : null;
     }
 
-    public T firstNotNull() {
+    default T firstNotNull() {
         return first(Objects::nonNull);
     }
 
-    public T first(Predicate<T> predicate) {
+    default T first(Predicate<T> predicate) {
         for (T t : this) {
             if (predicate.test(t)) {
                 return t;
@@ -279,7 +267,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return null;
     }
 
-    public <V extends Comparable<V>> Pair<T, V> maxOf(Function<T, V> function) {
+    default <V extends Comparable<V>> Pair<T, V> maxOf(Function<T, V> function) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
@@ -297,7 +285,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return new Pair<>(max, maxValue);
     }
 
-    public T maxWith(Comparator<T> comparator) {
+    default T maxWith(Comparator<T> comparator) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
@@ -312,7 +300,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return max;
     }
 
-    public <V extends Comparable<V>> Pair<T, V> minOf(Function<T, V> function) {
+    default <V extends Comparable<V>> Pair<T, V> minOf(Function<T, V> function) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
@@ -330,7 +318,7 @@ public abstract class IterableBoost<T> implements Iterable<T> {
         return new Pair<>(min, minValue);
     }
 
-    public T minWith(Comparator<T> comparator) {
+    default T minWith(Comparator<T> comparator) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
