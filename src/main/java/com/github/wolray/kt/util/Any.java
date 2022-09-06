@@ -8,10 +8,6 @@ import java.util.function.Supplier;
  * @author worlay
  */
 public class Any {
-    public static void println(Object obj) {
-        System.out.println(obj);
-    }
-
     public static <T> T also(T t, Consumer<T> consumer) {
         consumer.accept(t);
         return t;
