@@ -10,7 +10,6 @@ import java.util.Iterator;
 public class BatchList<T> extends AbstractList<T> {
     private transient final SinglyList<ArrayList<T>> list = new SinglyList<>();
     private transient final int batchSize;
-    private transient int mod;
     private transient int size;
     private transient ArrayList<T> cur;
 
@@ -19,19 +18,20 @@ public class BatchList<T> extends AbstractList<T> {
     }
 
     public BatchList(int batchSize) {
-        this.batchSize = mod = batchSize;
+        this.batchSize = batchSize;
     }
 
     @Override
     public boolean add(T t) {
-        if (mod == batchSize) {
-            mod = 0;
+        if (cur == null) {
             cur = new ArrayList<>(batchSize);
             list.add(cur);
         }
         cur.add(t);
-        mod++;
         size++;
+        if (cur.size() == batchSize) {
+            cur = null;
+        }
         return true;
     }
 

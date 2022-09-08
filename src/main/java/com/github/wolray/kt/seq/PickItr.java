@@ -72,17 +72,17 @@ public abstract class PickItr<T> implements Iterator<T> {
         };
     }
 
-    public static <T> PickItr<T> flat(Iterator<? extends Iterable<T>> itr) {
+    public static <T> PickItr<T> flat(Iterator<? extends Iterable<T>> iterator) {
         return new PickItr<T>() {
             Iterator<T> cur = Collections.emptyIterator();
 
             @Override
             public T pick() {
                 while (!cur.hasNext()) {
-                    if (!itr.hasNext()) {
+                    if (!iterator.hasNext()) {
                         stop();
                     }
-                    cur = itr.next().iterator();
+                    cur = iterator.next().iterator();
                 }
                 return cur.next();
             }
