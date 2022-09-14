@@ -267,6 +267,10 @@ public interface IterableBoost<T> extends Iterable<T> {
         return null;
     }
 
+    default void printAll() {
+        forEach(System.out::println);
+    }
+
     default <V extends Comparable<V>> Pair<T, V> maxOf(Function<T, V> function) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {

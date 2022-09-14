@@ -13,10 +13,6 @@ public abstract class PickItr<T> implements Iterator<T> {
     private T next;
     private State state = State.Unset;
 
-    public static <T> T stop() {
-        throw StopException.INSTANCE;
-    }
-
     public static <T> PickItr<T> gen(Supplier<T> supplier) {
         return new PickItr<T>() {
             @Override
@@ -102,6 +98,10 @@ public abstract class PickItr<T> implements Iterator<T> {
             }
             return res;
         });
+    }
+
+    public static <T> T stop() {
+        throw StopException.INSTANCE;
     }
 
     public abstract T pick();
