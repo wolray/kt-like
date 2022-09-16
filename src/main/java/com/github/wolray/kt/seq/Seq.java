@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 /**
  * @author wolray
  */
-public interface Seq<T> extends IterableBoost<T>, Cacheable<T, Seq<T>> {
+public interface Seq<T> extends IterableBoost<T> {
     static <T> Seq<T> of(Iterable<T> iterable) {
         if (iterable instanceof Seq<?>) {
             return (Seq<T>)iterable;
@@ -207,22 +207,21 @@ public interface Seq<T> extends IterableBoost<T>, Cacheable<T, Seq<T>> {
     }
 
     default Seq<T> cacheBy(Cache<T> cache) {
+        return cacheBy(10, cache);
+    }
+
+    default Seq<T> cacheBy(int batchSize, Cache<T> cache) {
         return new Cache.Cacheable<T, Seq<T>>() {
             @Override
-            public Seq<T> fromCache(Iterable<T> iterable) {
+            public Iterator<T> iterator() {
+                return Seq.this.iterator();
+            }
+
+            @Override
+            public Seq<T> convert(Iterable<T> iterable) {
                 return of(iterable);
             }
-
-            @Override
-            public List<T> collectForCache(int batchSize) {
-                return toBatchList(batchSize);
-            }
-
-            @Override
-            public Seq<T> afterCache(List<T> list) {
-                return of(list);
-            }
-        }.cacheBy(cache);
+        }.cacheBy(batchSize, cache);
     }
 
     default <E> E let(Function<Seq<T>, E> function) {

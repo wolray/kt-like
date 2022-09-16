@@ -6,32 +6,27 @@ import java.util.List;
  * @author wolray
  */
 public interface Cache<T> {
-    default int batchSize() {
-        return 10;
-    }
-
     boolean exists();
 
     Iterable<T> read();
 
     void write(List<T> ts);
 
-    interface Cacheable<T, S> {
-        S fromCache(Iterable<T> iterable);
+    interface Cacheable<T, S> extends Iterable<T> {
+        S convert(Iterable<T> iterable);
 
-        List<T> collectForCache(int batchSize);
-
-        S afterCache(List<T> list);
-
-        default S cacheBy(Cache<T> cache) {
+        default S cacheBy(int batchSize, Cache<T> cache) {
             if (cache.exists()) {
-                return fromCache(cache.read());
+                return convert(cache.read());
             } else {
-                List<T> list = collectForCache(cache.batchSize());
+                List<T> list = new BatchList<>(batchSize);
+                for (T t : this) {
+                    list.add(t);
+                }
                 if (!list.isEmpty()) {
                     cache.write(list);
                 }
-                return afterCache(list);
+                return convert(list);
             }
         }
     }
