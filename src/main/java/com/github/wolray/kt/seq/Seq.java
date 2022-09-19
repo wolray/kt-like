@@ -3,6 +3,7 @@ package com.github.wolray.kt.seq;
 import com.github.wolray.kt.util.Any;
 import com.github.wolray.kt.util.Functions;
 import com.github.wolray.kt.util.Iterables;
+import com.github.wolray.kt.util.Self;
 
 import java.util.*;
 import java.util.function.*;
@@ -12,7 +13,7 @@ import java.util.stream.StreamSupport;
 /**
  * @author wolray
  */
-public interface Seq<T> extends IterableBoost<T>, Cache.Cacheable<T, Seq<T>> {
+public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<T, Seq<T>> {
     static <T> Seq<T> of(Iterable<T> iterable) {
         if (iterable instanceof Seq<?>) {
             return (Seq<T>)iterable;
@@ -103,6 +104,11 @@ public interface Seq<T> extends IterableBoost<T>, Cache.Cacheable<T, Seq<T>> {
 
     static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
         return join(Any.also(new Yield<>(batchSize), yieldConsumer).list);
+    }
+
+    @Override
+    default Seq<T> _self() {
+        return this;
     }
 
     @Override
@@ -209,10 +215,6 @@ public interface Seq<T> extends IterableBoost<T>, Cache.Cacheable<T, Seq<T>> {
 
     default Seq<T> cache(int batchSize) {
         return this instanceof Backed ? this : new Backed<>(toBatchList(batchSize));
-    }
-
-    default <E> E let(Function<Seq<T>, E> function) {
-        return function.apply(this);
     }
 
     default <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
