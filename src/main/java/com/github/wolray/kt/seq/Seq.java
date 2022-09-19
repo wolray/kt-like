@@ -12,7 +12,7 @@ import java.util.stream.StreamSupport;
 /**
  * @author wolray
  */
-public interface Seq<T> extends IterableBoost<T> {
+public interface Seq<T> extends IterableBoost<T>, Cache.Cacheable<T, Seq<T>> {
     static <T> Seq<T> of(Iterable<T> iterable) {
         if (iterable instanceof Seq<?>) {
             return (Seq<T>)iterable;
@@ -103,6 +103,11 @@ public interface Seq<T> extends IterableBoost<T> {
 
     static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
         return join(Any.also(new Yield<>(batchSize), yieldConsumer).list);
+    }
+
+    @Override
+    default Seq<T> _convert(Iterable<T> iterable) {
+        return of(iterable);
     }
 
     default <E> Seq<E> recur(Function<Iterator<T>, E> function) {
@@ -206,20 +211,6 @@ public interface Seq<T> extends IterableBoost<T> {
         return this instanceof Backed ? this : new Backed<>(toBatchList(batchSize));
     }
 
-    default Cacheable<T> asCacheable() {
-        return new Cacheable<T>() {
-            @Override
-            public Seq<T> convert(Iterable<T> iterable) {
-                return of(iterable);
-            }
-
-            @Override
-            public Iterator<T> iterator() {
-                return Seq.this.iterator();
-            }
-        };
-    }
-
     default <E> E let(Function<Seq<T>, E> function) {
         return function.apply(this);
     }
@@ -274,8 +265,6 @@ public interface Seq<T> extends IterableBoost<T> {
         }
         assert !iterator.hasNext() : "exceeded";
     }
-
-    interface Cacheable<T> extends Seq<T>, Cache.Cacheable<T, Seq<T>> {}
 
     class Backed<T> implements Seq<T> {
         private final Collection<T> collection;

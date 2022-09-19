@@ -16,7 +16,7 @@ public interface Cache<T> {
     interface Cacheable<T, S> {
         Iterator<T> iterator();
 
-        S convert(Iterable<T> iterable);
+        S _convert(Iterable<T> iterable);
 
         default S cacheBy(Cache<T> cache) {
             return cacheBy(10, cache);
@@ -24,7 +24,7 @@ public interface Cache<T> {
 
         default S cacheBy(int batchSize, Cache<T> cache) {
             if (cache.exists()) {
-                return convert(cache.read());
+                return _convert(cache.read());
             } else {
                 List<T> list = new BatchList<>(batchSize);
                 Iterator<T> iterator = iterator();
@@ -34,7 +34,7 @@ public interface Cache<T> {
                 if (!list.isEmpty()) {
                     cache.write(list);
                 }
-                return convert(list);
+                return _convert(list);
             }
         }
     }
