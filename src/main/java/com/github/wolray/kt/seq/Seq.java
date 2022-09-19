@@ -18,7 +18,7 @@ public interface Seq<T> extends IterableBoost<T> {
             return (Seq<T>)iterable;
         }
         if (iterable instanceof Collection<?>) {
-            return new Cached<>((Collection<T>)iterable);
+            return new Backed<>((Collection<T>)iterable);
         }
         return iterable::iterator;
     }
@@ -171,13 +171,13 @@ public interface Seq<T> extends IterableBoost<T> {
 
     default Seq<T> take(int n) {
         return n <= 0 ? empty()
-            : Cached.outSize(this, n) ? this
+            : Backed.outSize(this, n) ? this
             : () -> CountItr.take(iterator(), n);
     }
 
     default Seq<T> drop(int n) {
         return n <= 0 ? this
-            : Cached.outSize(this, n) ? empty()
+            : Backed.outSize(this, n) ? empty()
             : () -> CountItr.drop(iterator(), n);
     }
 
@@ -203,25 +203,21 @@ public interface Seq<T> extends IterableBoost<T> {
     }
 
     default Seq<T> cache(int batchSize) {
-        return this instanceof Seq.Cached ? this : new Cached<>(toBatchList(batchSize));
+        return this instanceof Backed ? this : new Backed<>(toBatchList(batchSize));
     }
 
-    default Seq<T> cacheBy(Cache<T> cache) {
-        return cacheBy(10, cache);
-    }
-
-    default Seq<T> cacheBy(int batchSize, Cache<T> cache) {
-        return new Cache.Cacheable<T, Seq<T>>() {
-            @Override
-            public Iterator<T> iterator() {
-                return Seq.this.iterator();
-            }
-
+    default Cacheable<T> asCacheable() {
+        return new Cacheable<T>() {
             @Override
             public Seq<T> convert(Iterable<T> iterable) {
                 return of(iterable);
             }
-        }.cacheBy(batchSize, cache);
+
+            @Override
+            public Iterator<T> iterator() {
+                return Seq.this.iterator();
+            }
+        };
     }
 
     default <E> E let(Function<Seq<T>, E> function) {
@@ -279,15 +275,17 @@ public interface Seq<T> extends IterableBoost<T> {
         assert !iterator.hasNext() : "exceeded";
     }
 
-    class Cached<T> implements Seq<T> {
+    interface Cacheable<T> extends Seq<T>, Cache.Cacheable<T, Seq<T>> {}
+
+    class Backed<T> implements Seq<T> {
         private final Collection<T> collection;
 
-        public Cached(Collection<T> collection) {
+        public Backed(Collection<T> collection) {
             this.collection = collection;
         }
 
         static boolean outSize(IterableBoost<?> boost, int n) {
-            return boost instanceof Cached && n >= boost.sizeOrDefault();
+            return boost instanceof Backed && n >= boost.sizeOrDefault();
         }
 
         @Override

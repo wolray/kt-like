@@ -12,7 +12,7 @@ public interface IterableBoost<T> extends Iterable<T> {
     }
 
     default T get(int index) {
-        if (Seq.Cached.outSize(this, index)) {
+        if (Seq.Backed.outSize(this, index)) {
             throw new IndexOutOfBoundsException(Integer.toString(index));
         }
         for (T t : this) {
