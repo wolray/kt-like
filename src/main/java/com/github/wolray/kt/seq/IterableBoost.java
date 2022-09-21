@@ -2,6 +2,8 @@ package com.github.wolray.kt.seq;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author wolray
@@ -156,6 +158,20 @@ public interface IterableBoost<T> extends Iterable<T> {
             }
         }
         return new Pair<>(trueList, falseList);
+    }
+
+    default Stream<T> stream(boolean parallel) {
+        return StreamSupport.stream(spliterator(), parallel);
+    }
+
+    default T[] toArray(IntFunction<T[]> generator) {
+        List<T> list = toBatchList();
+        T[] res = generator.apply(list.size());
+        int i = 0;
+        for (T t : list) {
+            res[i++] = t;
+        }
+        return res;
     }
 
     default boolean all(Predicate<T> predicate) {

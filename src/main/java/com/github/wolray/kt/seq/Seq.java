@@ -7,8 +7,6 @@ import com.github.wolray.kt.util.Self;
 
 import java.util.*;
 import java.util.function.*;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /**
  * @author wolray
@@ -22,6 +20,22 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
             return new Backed<>((Collection<T>)iterable);
         }
         return iterable::iterator;
+    }
+
+    static <T> Seq<T> of(Supplier<Enumeration<T>> enumerationSupplier) {
+        return () -> new Iterator<T>() {
+            Enumeration<T> enumeration = enumerationSupplier.get();
+
+            @Override
+            public boolean hasNext() {
+                return enumeration.hasMoreElements();
+            }
+
+            @Override
+            public T next() {
+                return enumeration.nextElement();
+            }
+        };
     }
 
     @SafeVarargs
@@ -253,10 +267,6 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     default <E, R> Seq<R> cartesian(Iterable<E> es, BiFunction<T, E, R> function) {
         Seq<E> seq = es::iterator;
         return flatMap(t -> seq.map(e -> function.apply(t, e)));
-    }
-
-    default Stream<T> stream(boolean parallel) {
-        return StreamSupport.stream(spliterator(), parallel);
     }
 
     @SuppressWarnings("unchecked")
