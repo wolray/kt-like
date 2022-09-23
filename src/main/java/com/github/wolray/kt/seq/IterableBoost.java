@@ -164,12 +164,13 @@ public interface IterableBoost<T> extends Iterable<T> {
         return StreamSupport.stream(spliterator(), parallel);
     }
 
-    default T[] toArray(IntFunction<T[]> generator) {
+    @SuppressWarnings("unchecked")
+    default <E> E[] toArray(IntFunction<E[]> generator) {
         List<T> list = toBatchList();
-        T[] res = generator.apply(list.size());
+        E[] res = generator.apply(list.size());
         int i = 0;
         for (T t : list) {
-            res[i++] = t;
+            res[i++] = (E)t;
         }
         return res;
     }
