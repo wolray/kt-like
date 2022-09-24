@@ -142,8 +142,8 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return () -> MapItr.of(iterator(), function);
     }
 
-    default <E> Seq<E> mapIo(Functions.IoFun<T, E> function) {
-        return () -> MapItr.of(iterator(), Functions.byIo(function));
+    default <E> Seq<E> mapChecked(Functions.CheckedFun<T, E> function) {
+        return () -> MapItr.of(iterator(), Functions.uncheck(function));
     }
 
     default <E> Seq<E> mapNotNull(Function<T, E> function) {
