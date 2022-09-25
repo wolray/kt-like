@@ -141,7 +141,9 @@ public abstract class PickItr<T> implements Iterator<T> {
     }
 
     enum State {
-        Unset, Cached, Done,
+        Unset,
+        Cached,
+        Done
     }
 
     static class StopException extends RuntimeException {
