@@ -52,8 +52,11 @@ public interface SeqReader<S, T> {
 
     interface Text extends WithCe.Supplier<InputStream> {}
 
-    static SeqReader.Is<String> text() {
-        return source -> {
+    interface Simple extends SeqReader.Is<String> {
+        Simple INSTANCE = new Simple() {};
+
+        @Override
+        default Iterator<String> iterator(Text source) throws Exception {
             BufferedReader reader = new BufferedReader(new InputStreamReader(source.get()));
             return new PickItr<String>() {
                 @Override
@@ -70,6 +73,10 @@ public interface SeqReader<S, T> {
                     }
                 }
             };
-        };
+        }
+    }
+
+    static Is<String> simple() {
+        return Simple.INSTANCE;
     }
 }
