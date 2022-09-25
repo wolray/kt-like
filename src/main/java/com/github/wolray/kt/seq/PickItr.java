@@ -22,6 +22,16 @@ public abstract class PickItr<T> implements Iterator<T> {
         };
     }
 
+    static <T> Iterator<T> genUntilNull(Supplier<T> supplier) {
+        return new PickItr<T>() {
+            @Override
+            public T pick() {
+                T res = supplier.get();
+                return res != null ? res : stop();
+            }
+        };
+    }
+
     public static <S, T> PickItr<T> gen(S seed, Function<S, T> function) {
         return gen(() -> function.apply(seed));
     }
@@ -131,9 +141,7 @@ public abstract class PickItr<T> implements Iterator<T> {
     }
 
     enum State {
-        Unset,
-        Cached,
-        Done,
+        Unset, Cached, Done,
     }
 
     static class StopException extends RuntimeException {

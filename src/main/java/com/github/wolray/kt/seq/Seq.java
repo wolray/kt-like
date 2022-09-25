@@ -1,9 +1,6 @@
 package com.github.wolray.kt.seq;
 
-import com.github.wolray.kt.util.Any;
-import com.github.wolray.kt.util.Functions;
-import com.github.wolray.kt.util.Iterables;
-import com.github.wolray.kt.util.Self;
+import com.github.wolray.kt.util.*;
 
 import java.util.*;
 import java.util.function.*;
@@ -20,6 +17,10 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
             return new Backed<>((Collection<T>)iterable);
         }
         return iterable::iterator;
+    }
+
+    static <T> Seq<T> ofCe(WithCe.Iterable<T> iterable) {
+        return iterable.asSeq();
     }
 
     static <T> Seq<T> of(Supplier<Enumeration<T>> enumerationSupplier) {
@@ -77,7 +78,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     static <T> Seq<T> genUntilNull(Supplier<T> supplier) {
-        return gen(Functions.orBy(supplier, PickItr::stop));
+        return () -> PickItr.genUntilNull(supplier);
     }
 
     static <T> Seq<T> gen(Supplier<T> supplier) {
@@ -142,8 +143,8 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return () -> MapItr.of(iterator(), function);
     }
 
-    default <E> Seq<E> mapChecked(Functions.CheckedFun<T, E> function) {
-        return () -> MapItr.of(iterator(), Functions.uncheck(function));
+    default <E> Seq<E> mapCe(WithCe.Function<T, E> function) {
+        return () -> MapItr.of(iterator(), function.asNormal());
     }
 
     default <E> Seq<E> mapNotNull(Function<T, E> function) {
@@ -199,15 +200,11 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default Seq<T> take(int n) {
-        return n <= 0 ? empty()
-            : Backed.outSize(this, n) ? this
-            : () -> CountItr.take(iterator(), n);
+        return n <= 0 ? empty() : Backed.outSize(this, n) ? this : () -> CountItr.take(iterator(), n);
     }
 
     default Seq<T> drop(int n) {
-        return n <= 0 ? this
-            : Backed.outSize(this, n) ? empty()
-            : () -> CountItr.drop(iterator(), n);
+        return n <= 0 ? this : Backed.outSize(this, n) ? empty() : () -> CountItr.drop(iterator(), n);
     }
 
     default Seq<T> dropWhile(Predicate<T> predicate) {
@@ -219,8 +216,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default <E> Seq<E> runningFold(E init, BiFunction<T, E, E> function) {
-        return () -> MapItr.of(iterator(), new Mutable<>(init),
-            (t, m) -> m.it = function.apply(t, m.it));
+        return () -> MapItr.of(iterator(), new Mutable<>(init), (t, m) -> m.it = function.apply(t, m.it));
     }
 
     default Seq<T> onEach(Consumer<T> consumer) {
