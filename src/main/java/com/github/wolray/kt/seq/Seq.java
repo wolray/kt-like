@@ -140,7 +140,22 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default <E> Seq<E> map(Function<T, E> function) {
-        return () -> MapItr.of(iterator(), function);
+        return map(0, function);
+    }
+
+    default <E> Seq<E> map(int skip, Function<T, E> function) {
+        return () -> {
+            Iterator<T> iterator = iterator();
+            if (skip > 0) {
+                for (int i = 0; i < skip && iterator.hasNext(); i++) {
+                    iterator.next();
+                }
+            }
+            if (function instanceof ContextMapper) {
+                ((ContextMapper<T, E>)function).preprocess(iterator);
+            }
+            return MapItr.of(iterator, function);
+        };
     }
 
     default <E> Seq<E> mapCe(WithCe.Function<T, E> function) {
@@ -298,5 +313,9 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         public Iterator<T> iterator() {
             return collection.iterator();
         }
+    }
+
+    interface ContextMapper<T, E> extends Function<T, E> {
+        void preprocess(Iterator<T> iterator);
     }
 }
