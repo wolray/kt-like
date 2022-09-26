@@ -15,37 +15,45 @@ import java.util.Iterator;
 public interface SeqReader<S, T> {
     Iterator<T> iterator(S source) throws Exception;
 
-    default Seq<T> read(S source) {
-        return read(source, null);
+    default SafeSeq<T> read(S source) {
+        return new SafeSeq<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                try {
+                    return SeqReader.this.iterator(source);
+                } catch (Exception e) {
+                    if (errorType != null && errorType.isAssignableFrom(e.getClass())) {
+                        return Collections.emptyIterator();
+                    }
+                    throw new RuntimeException(e);
+                }
+            }
+        };
     }
 
-    default Seq<T> read(S source, Class<? extends Exception> ignore) {
-        return Seq.ofCe(() -> {
-            try {
-                return iterator(source);
-            } catch (Exception e) {
-                if (ignore != null && ignore.isAssignableFrom(e.getClass())) {
-                    return Collections.emptyIterator();
-                }
-                throw e;
-            }
-        });
+    abstract class SafeSeq<T> implements Seq<T> {
+        public Class<? extends Exception> errorType;
+
+        public Seq<T> ignore(Class<? extends Exception> type) {
+            errorType = type;
+            return this;
+        }
     }
 
     interface Is<T> extends SeqReader<Text, T> {
-        default Seq<T> read(URL url) {
+        default SafeSeq<T> read(URL url) {
             return read(url::openStream);
         }
 
-        default Seq<T> read(String file) {
+        default SafeSeq<T> read(String file) {
             return read(() -> Files.newInputStream(Paths.get(file)));
         }
 
-        default Seq<T> read(File file) {
+        default SafeSeq<T> read(File file) {
             return read(() -> Files.newInputStream(file.toPath()));
         }
 
-        default Seq<T> readResource(Class<?> cls, String resource) {
+        default SafeSeq<T> read(Class<?> cls, String resource) {
             return read(() -> {
                 InputStream res = cls.getResourceAsStream(resource);
                 if (res == null) {
