@@ -45,15 +45,21 @@ public interface SeqReader<S, T> {
             return read(() -> Files.newInputStream(file.toPath()));
         }
 
-        default Seq<T> read(Class<?> cls, String resource) {
-            return read(() -> cls.getResourceAsStream(resource));
+        default Seq<T> readResource(Class<?> cls, String resource) {
+            return read(() -> {
+                InputStream res = cls.getResourceAsStream(resource);
+                if (res == null) {
+                    throw new FileNotFoundException(resource);
+                }
+                return res;
+            });
         }
     }
 
     interface Text extends WithCe.Supplier<InputStream> {}
 
-    interface Simple extends SeqReader.Is<String> {
-        Simple INSTANCE = new Simple() {};
+    interface Str extends SeqReader.Is<String> {
+        Str INSTANCE = new Str() {};
 
         @Override
         default Iterator<String> iterator(Text source) throws Exception {
@@ -76,7 +82,7 @@ public interface SeqReader<S, T> {
         }
     }
 
-    static Is<String> simple() {
-        return Simple.INSTANCE;
+    static Is<String> str() {
+        return Str.INSTANCE;
     }
 }
