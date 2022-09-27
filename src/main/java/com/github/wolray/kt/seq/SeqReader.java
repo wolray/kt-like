@@ -32,7 +32,7 @@ public interface SeqReader<S, T> {
     }
 
     abstract class SafeSeq<T> implements Seq<T> {
-        public Class<? extends Exception> errorType;
+        Class<? extends Exception> errorType;
 
         public Seq<T> ignore(Class<? extends Exception> type) {
             errorType = type;
