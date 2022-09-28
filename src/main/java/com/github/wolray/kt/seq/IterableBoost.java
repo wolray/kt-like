@@ -124,6 +124,10 @@ public interface IterableBoost<T> extends Iterable<T> {
         return foldBy(des, (res, t) -> res.add(function.apply(t)));
     }
 
+    default String join(String sep) {
+        return join(sep, String::valueOf);
+    }
+
     default String join(String sep, Function<T, String> function) {
         StringJoiner joiner = new StringJoiner(sep);
         for (T t : this) {
