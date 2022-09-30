@@ -22,6 +22,20 @@ public class WithCe {
         }
     }
 
+    public interface BiFunction<T, V, R> {
+        R apply(T t, V v) throws Exception;
+
+        default java.util.function.BiFunction<T, V, R> asNormal() {
+            return (t, v) -> {
+                try {
+                    return apply(t, v);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+    }
+
     public interface Consumer<T> {
         void accept(T t) throws Exception;
 
@@ -29,6 +43,20 @@ public class WithCe {
             return it -> {
                 try {
                     accept(it);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+    }
+
+    public interface BiConsumer<T, V> {
+        void accept(T t, V v) throws Exception;
+
+        default java.util.function.BiConsumer<T, V> asNormal() {
+            return (t, v) -> {
+                try {
+                    accept(t, v);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
