@@ -1,7 +1,7 @@
 package com.github.wolray.kt.seq;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author wolray
@@ -13,28 +13,23 @@ public interface Cache<T> {
 
     void write(List<T> ts);
 
-    interface Cacheable<T, S> {
-        Iterator<T> iterator();
-
-        S _convert(Iterable<T> iterable);
-
+    interface Cacheable<T, S> extends Iterable<T>, Function<Iterable<T>, S> {
         default S cacheBy(Cache<T> cache) {
             return cacheBy(10, cache);
         }
 
         default S cacheBy(int batchSize, Cache<T> cache) {
             if (cache.exists()) {
-                return _convert(cache.read());
+                return apply(cache.read());
             } else {
                 List<T> list = new BatchList<>(batchSize);
-                Iterator<T> iterator = iterator();
-                while (iterator.hasNext()) {
-                    list.add(iterator.next());
+                for (T t : this) {
+                    list.add(t);
                 }
                 if (!list.isEmpty()) {
                     cache.write(list);
                 }
-                return _convert(list);
+                return apply(list);
             }
         }
     }

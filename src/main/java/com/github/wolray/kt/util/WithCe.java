@@ -1,105 +1,93 @@
 package com.github.wolray.kt.util;
 
-import com.github.wolray.kt.seq.Seq;
-
 import java.util.Iterator;
 
 /**
  * @author wolray
  */
-public class WithCe {
-    public interface Function<T, E> {
-        E apply(T t) throws Exception;
-
-        default java.util.function.Function<T, E> asNormal() {
-            return it -> {
-                try {
-                    return apply(it);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
+public interface WithCe {
+    interface Function<T, V> {
+        V apply(T t) throws Exception;
     }
 
-    public interface BiFunction<T, V, R> {
+    interface BiFunction<T, V, R> {
         R apply(T t, V v) throws Exception;
-
-        default java.util.function.BiFunction<T, V, R> asNormal() {
-            return (t, v) -> {
-                try {
-                    return apply(t, v);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
     }
 
-    public interface Consumer<T> {
+    interface Consumer<T> {
         void accept(T t) throws Exception;
-
-        default java.util.function.Consumer<T> asNormal() {
-            return it -> {
-                try {
-                    accept(it);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
     }
 
-    public interface BiConsumer<T, V> {
+    interface BiConsumer<T, V> {
         void accept(T t, V v) throws Exception;
-
-        default java.util.function.BiConsumer<T, V> asNormal() {
-            return (t, v) -> {
-                try {
-                    accept(t, v);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
     }
 
-    public interface Supplier<T> {
+    interface Supplier<T> {
         T get() throws Exception;
-
-        default java.util.function.Supplier<T> asNormal() {
-            return () -> {
-                try {
-                    return get();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
     }
 
-    public interface Iterable<T> {
+    interface Iterable<T> {
         Iterator<T> iterator() throws Exception;
-
-        default Seq<T> asSeq() {
-            return () -> {
-                try {
-                    return iterator();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
     }
 
-    public static <T extends AutoCloseable> void safeAccept(T t, Consumer<T> consumer) throws Exception {
+    static <T, V> java.util.function.Function<T, V> mapper(Function<T, V> function) {
+        return it -> {
+            try {
+                return function.apply(it);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    static <T, V, R> java.util.function.BiFunction<T, V, R> mapper(BiFunction<T, V, R> function) {
+        return (t, v) -> {
+            try {
+                return function.apply(t, v);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    static <T> java.util.function.Consumer<T> acceptor(Consumer<T> consumer) {
+        return it -> {
+            try {
+                consumer.accept(it);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    static <T, V> java.util.function.BiConsumer<T, V> acceptor(BiConsumer<T, V> consumer) {
+        return (t, v) -> {
+            try {
+                consumer.accept(t, v);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    static <T> java.util.function.Supplier<T> getter(Supplier<T> supplier) {
+        return () -> {
+            try {
+                return supplier.get();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    static <T extends AutoCloseable> void safeAccept(T t, Consumer<T> consumer) throws Exception {
         safeApply(t, it -> {
             consumer.accept(it);
             return null;
         });
     }
 
-    public static <T extends AutoCloseable, E> E safeApply(T t, Function<T, E> function) throws Exception {
+    static <T extends AutoCloseable, E> E safeApply(T t, Function<T, E> function) throws Exception {
         Throwable throwable = null;
         try {
             return function.apply(t);

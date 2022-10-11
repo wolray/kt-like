@@ -19,8 +19,20 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return iterable::iterator;
     }
 
-    static <T> Seq<T> ofCe(WithCe.Iterable<T> iterable) {
-        return iterable.asSeq();
+    static <T> SafeSeq<T> ofSafe(WithCe.Iterable<T> iterable) {
+        return new SafeSeq<T>() {
+            @Override
+            public Iterator<T> iterator() {
+                try {
+                    return iterable.iterator();
+                } catch (Exception e) {
+                    if (errorType != null && errorType.isAssignableFrom(e.getClass())) {
+                        return Collections.emptyIterator();
+                    }
+                    throw new RuntimeException(e);
+                }
+            }
+        };
     }
 
     static <T> Seq<T> of(Supplier<Enumeration<T>> enumerationSupplier) {
@@ -122,12 +134,12 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     @Override
-    default Seq<T> _self() {
+    default Seq<T> get() {
         return this;
     }
 
     @Override
-    default Seq<T> _convert(Iterable<T> iterable) {
+    default Seq<T> apply(Iterable<T> iterable) {
         return of(iterable);
     }
 
@@ -159,7 +171,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default <E> Seq<E> mapCe(WithCe.Function<T, E> function) {
-        return () -> MapItr.of(iterator(), function.asNormal());
+        return () -> MapItr.of(iterator(), WithCe.mapper(function));
     }
 
     default <E> Seq<E> mapNotNull(Function<T, E> function) {
@@ -291,6 +303,15 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
             assert iterator.hasNext() && Objects.equals(iterator.next(), t) : "mismatched";
         }
         assert !iterator.hasNext() : "exceeded";
+    }
+
+    abstract class SafeSeq<T> implements Seq<T> {
+        Class<? extends Exception> errorType;
+
+        public Seq<T> ignore(Class<? extends Exception> type) {
+            errorType = type;
+            return this;
+        }
     }
 
     class Backed<T> implements Seq<T> {
