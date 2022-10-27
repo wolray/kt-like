@@ -81,8 +81,8 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return () -> CountItr.range(start, until, step);
     }
 
-    static <T> Seq<T> repeat(T t, int n) {
-        return () -> CountItr.repeat(t, n);
+    static <T> Seq<T> repeat(int n, T t) {
+        return () -> CountItr.repeat(n, t);
     }
 
     static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
@@ -91,6 +91,10 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
 
     static <T> Seq<T> genUntilNull(Supplier<T> supplier) {
         return () -> PickItr.genUntilNull(supplier);
+    }
+
+    static <T> YieldSeq<T> gen() {
+        return new YieldSeq<>();
     }
 
     static <T> Seq<T> gen(Supplier<T> supplier) {
@@ -123,14 +127,6 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return join(Arrays.asList(seed1, seed2),
             () -> PickItr.gen(new MutablePair<>(seed1, seed2), p ->
                 p.second = operator.apply(p.first, p.first = p.second)));
-    }
-
-    static <T> Seq<T> by(Consumer<Yield<T>> yieldConsumer) {
-        return by(10, yieldConsumer);
-    }
-
-    static <T> Seq<T> by(int batchSize, Consumer<Yield<T>> yieldConsumer) {
-        return join(Any.also(new Yield<>(batchSize), yieldConsumer).list);
     }
 
     @Override

@@ -72,7 +72,7 @@ public abstract class CountItr<T> implements Iterator<T> {
         };
     }
 
-    public static <T> CountItr<T> repeat(T t, int n) {
+    public static <T> CountItr<T> repeat(int n, T t) {
         return new CountItr<T>(n) {
             @Override
             public boolean hasNext() {
