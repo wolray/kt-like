@@ -48,4 +48,19 @@ public class SeqTest {
         System.out.println(Seq.of(list).chunked(4).toList());
         System.out.println(Seq.of(list).chunked(5).toList());
     }
+
+    @Test
+    public void testYield() {
+        YieldSeq<Integer> seq = Seq.gen();
+        seq.yield(2);
+        seq.yield(3);
+        seq.yield(4);
+        seq.yieldAll(Arrays.asList(5, 6, 7));
+        seq.yield(8);
+        seq.yieldAll(Collections.emptyList());
+        seq.yield(9);
+        seq.yieldAll(Collections.singletonList(10));
+        seq.yield(11);
+        seq.assertTo(2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+    }
 }
