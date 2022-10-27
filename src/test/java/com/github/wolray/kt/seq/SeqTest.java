@@ -3,6 +3,7 @@ package com.github.wolray.kt.seq;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -22,7 +23,7 @@ public class SeqTest {
         seq.take(5).drop(2).assertTo(4, 1, 6);
         Seq.gen(() -> 1).take(4).assertTo(1, 1, 1, 1);
         Seq.gen(() -> 1).take(5).assertTo(1, 1, 1, 1, 1);
-        Seq.repeat(1, 5).assertTo(1, 1, 1, 1, 1);
+        Seq.repeat(5, 1).assertTo(1, 1, 1, 1, 1);
         Seq.range(0, 10, 2).assertTo(0, 2, 4, 6, 8);
     }
 
