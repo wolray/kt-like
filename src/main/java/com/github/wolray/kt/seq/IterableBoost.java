@@ -84,23 +84,23 @@ public interface IterableBoost<T> extends Iterable<T> {
         return foldBy(des, (res, t) -> res.put(t, vFunction.apply(t)));
     }
 
-    default <E> List<E> mapTo(Function<T, E> function) {
+    default <E> ArrayList<E> mapTo(Function<T, E> function) {
         return toCollection(new ArrayList<>(sizeOrDefault()), function);
     }
 
-    default <E> List<E> mapTo(List<E> des, Function<T, E> function) {
+    default <E, C extends Collection<E>> C mapTo(C des, Function<T, E> function) {
         return toCollection(des, function);
     }
 
-    default Set<T> toSet() {
+    default HashSet<T> toSet() {
         return toCollection(new HashSet<>(sizeOrDefault()));
     }
 
-    default <E> Set<E> toSet(Function<T, E> function) {
+    default <E> HashSet<E> toSet(Function<T, E> function) {
         return toCollection(new HashSet<>(sizeOrDefault()), function);
     }
 
-    default List<T> toList() {
+    default ArrayList<T> toList() {
         return toCollection(new ArrayList<>(sizeOrDefault()));
     }
 

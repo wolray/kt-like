@@ -2,9 +2,7 @@ package com.github.wolray.kt.seq;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -14,7 +12,6 @@ public class SeqTest {
     @Test
     public void testResult() {
         Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
-        System.out.println(seq.toList());
         Predicate<Integer> predicate = i -> (i & 1) == 0;
         seq.filter(predicate).assertTo(0, 2, 4, 6, 10, 12);
         seq.dropWhile(predicate).assertTo(1, 6, 3, 5, 7, 10, 11, 12);
@@ -31,7 +28,6 @@ public class SeqTest {
     public void testBatchList() {
         Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
         List<Integer> list = seq.toBatchList(5);
-        System.out.println(list);
         seq.runningFold(0, Integer::sum).assertTo(0, 2, 6, 7, 13, 16, 21, 28, 38, 49, 61);
         Seq<Integer> fib = Seq.gen(1, 1, Integer::sum).take(10);
         fib.assertTo(1, 1, 2, 3, 5, 8, 13, 21, 34, 55);
@@ -52,16 +48,15 @@ public class SeqTest {
 
     @Test
     public void testYield() {
-        YieldSeq<Integer> seq = Seq.gen();
-        seq.yield(2);
-        seq.yield(3);
-        seq.yield(4);
-        seq.yieldAll(Arrays.asList(5, 6, 7));
-        seq.yield(8);
-        seq.yieldAll(Collections.emptyList());
-        seq.yield(9);
-        seq.yieldAll(Collections.singletonList(10));
-        seq.yield(11);
-        seq.assertTo(2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+        Seq.by(it -> it
+            .yield(2)
+            .yield(3)
+            .yield(4)
+            .yieldAll(Arrays.asList(5, 6, 7))
+            .yield(8)
+            .yieldAll(Collections.emptyList())
+            .yield(9)
+            .yieldAll(Collections.singletonList(10))
+            .yield(11)).assertTo(2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
     }
 }

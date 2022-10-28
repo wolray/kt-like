@@ -2,6 +2,7 @@ package com.github.wolray.kt.seq;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * @author wolray
@@ -12,24 +13,31 @@ public class YieldSeq<T> implements Seq<T> {
 
     YieldSeq() {}
 
-    public void yield(T t) {
+    private YieldSeq<T> add(Node<T> node) {
+        last.next = node;
+        last = node;
+        return this;
+    }
+
+    public YieldSeq<T> yield(T t) {
         Node<T> it = new Node<>();
         it.t = t;
-        last.next = it;
-        last = it;
+        return add(it);
     }
 
-    public void yieldAll(Iterable<T> iterable) {
-        Node<T> it = new Node<>();
+    public YieldSeq<T> yieldAll(Iterable<T> iterable) {
+        Objects.requireNonNull(iterable);
+        Multi<T> it = new Multi<>();
         it.iterable = iterable;
-        last.next = it;
-        last = it;
+        return add(it);
     }
 
-    public void yieldAll(Iterator<T> iterator) {
+    public YieldSeq<T> yieldAll(Iterator<T> iterator) {
+        Objects.requireNonNull(iterator);
         while (iterator.hasNext()) {
             this.yield(iterator.next());
         }
+        return this;
     }
 
     @Override
@@ -45,8 +53,8 @@ public class YieldSeq<T> implements Seq<T> {
                 }
                 while (curr.next != null) {
                     curr = curr.next;
-                    if (curr.iterable != null) {
-                        iterator = curr.iterable.iterator();
+                    if (curr instanceof Multi) {
+                        iterator = ((Multi<T>)curr).iterable.iterator();
                         if (iterator.hasNext()) {
                             return iterator.next();
                         }
@@ -59,9 +67,12 @@ public class YieldSeq<T> implements Seq<T> {
         };
     }
 
-    private static class Node<T> {
+    static class Node<T> {
         T t;
-        Iterable<T> iterable;
         Node<T> next;
+    }
+
+    static class Multi<T> extends Node<T> {
+        Iterable<T> iterable;
     }
 }

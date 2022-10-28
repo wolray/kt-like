@@ -85,48 +85,48 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return () -> CountItr.repeat(n, t);
     }
 
-    static <S, T> Seq<T> recur(Supplier<S> seedSupplier, Function<S, T> function) {
-        return () -> PickItr.gen(seedSupplier.get(), function);
-    }
-
     static <T> Seq<T> genUntilNull(Supplier<T> supplier) {
         return () -> PickItr.genUntilNull(supplier);
-    }
-
-    static <T> YieldSeq<T> gen() {
-        return new YieldSeq<>();
     }
 
     static <T> Seq<T> gen(Supplier<T> supplier) {
         return () -> PickItr.gen(supplier);
     }
 
+        static <S, T> Seq<T> gen(Supplier<S> seedSupplier, Function<S, T> function) {
+        return () -> PickItr.gen(seedSupplier.get(), function);
+    }
+
     static Seq<Integer> gen(int seed, IntUnaryOperator operator) {
-        return () -> PickItr.gen(new int[]{seed}, a -> {
-            int t = a[0];
-            a[0] = operator.applyAsInt(a[0]);
-            return t;
-        });
+        return by(it -> it
+            .yield(seed)
+            .yieldAll(() -> PickItr.gen(new int[]{seed}, a -> a[0] = operator.applyAsInt(a[0]))));
     }
 
     static <T> Seq<T> gen(T seed, UnaryOperator<T> operator) {
-        return () -> PickItr.gen(new Mutable<>(seed), m -> {
-            T t = m.it;
-            m.it = operator.apply(m.it);
-            return t;
-        });
+        return by(it -> it
+            .yield(seed)
+            .yieldAll(() -> PickItr.gen(new Mutable<>(seed), m -> m.it = operator.apply(m.it))));
     }
 
     static Seq<Integer> gen(int seed1, int seed2, IntBinaryOperator operator) {
-        return join(Arrays.asList(seed1, seed2),
-            () -> PickItr.gen(new int[]{seed1, seed2}, a ->
-                a[1] = operator.applyAsInt(a[0], a[0] = a[1])));
+        return by(it -> it
+            .yield(seed1)
+            .yield(seed2)
+            .yieldAll(() -> PickItr.gen(new int[]{seed1, seed2},
+                a -> a[1] = operator.applyAsInt(a[0], a[0] = a[1]))));
     }
 
     static <T> Seq<T> gen(T seed1, T seed2, BinaryOperator<T> operator) {
-        return join(Arrays.asList(seed1, seed2),
-            () -> PickItr.gen(new MutablePair<>(seed1, seed2), p ->
-                p.second = operator.apply(p.first, p.first = p.second)));
+        return by(it -> it
+            .yield(seed1)
+            .yield(seed2)
+            .yieldAll(() -> PickItr.gen(new MutablePair<>(seed1, seed2),
+                p -> p.second = operator.apply(p.first, p.first = p.second))));
+    }
+
+    static <T> Seq<T> by(Consumer<YieldSeq<T>> consumer) {
+        return Any.also(new YieldSeq<>(), consumer);
     }
 
     @Override
@@ -140,7 +140,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default <E> Seq<E> recur(Function<Iterator<T>, E> function) {
-        return recur(this::iterator, function);
+        return gen(this::iterator, function);
     }
 
     default <S, E> Seq<E> map(Supplier<S> stateSupplier, BiFunction<T, S, E> function) {
@@ -313,7 +313,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     class Backed<T> implements Seq<T> {
         private final Collection<T> collection;
 
-        public Backed(Collection<T> collection) {
+        Backed(Collection<T> collection) {
             this.collection = collection;
         }
 
