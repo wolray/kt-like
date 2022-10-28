@@ -93,7 +93,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return () -> PickItr.gen(supplier);
     }
 
-        static <S, T> Seq<T> gen(Supplier<S> seedSupplier, Function<S, T> function) {
+    static <S, T> Seq<T> gen(Supplier<S> seedSupplier, Function<S, T> function) {
         return () -> PickItr.gen(seedSupplier.get(), function);
     }
 

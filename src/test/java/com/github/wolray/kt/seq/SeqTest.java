@@ -27,7 +27,6 @@ public class SeqTest {
     @Test
     public void testBatchList() {
         Seq<Integer> seq = Seq.of(0, 2, 4, 1, 6, 3, 5, 7, 10, 11, 12);
-        List<Integer> list = seq.toBatchList(5);
         seq.runningFold(0, Integer::sum).assertTo(0, 2, 6, 7, 13, 16, 21, 28, 38, 49, 61);
         Seq<Integer> fib = Seq.gen(1, 1, Integer::sum).take(10);
         fib.assertTo(1, 1, 2, 3, 5, 8, 13, 21, 34, 55);
