@@ -249,13 +249,24 @@ public interface IterableBoost<T> extends Iterable<T> {
     }
 
     default double average(ToDoubleFunction<T> function) {
-        double res = 0;
+        double sum = 0;
         int count = 0;
         for (T t : this) {
-            res += function.applyAsDouble(t);
+            sum += function.applyAsDouble(t);
             count++;
         }
-        return count > 0 ? res / count : 0;
+        return count > 0 ? sum / count : 0;
+    }
+
+    default double average(ToDoubleFunction<T> function, ToDoubleFunction<T> weightFunction) {
+        double sum = 0, weight = 0;
+        for (T t : this) {
+            double v = function.applyAsDouble(t);
+            double w = weightFunction.applyAsDouble(t);
+            sum += v * w;
+            weight += w;
+        }
+        return weight > 0 ? sum / weight : 0;
     }
 
     default DoubleSummaryStatistics summarize(ToDoubleFunction<T> function) {
