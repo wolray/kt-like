@@ -310,7 +310,7 @@ public interface IterableBoost<T> extends Iterable<T> {
         return new Pair<>(max, maxValue);
     }
 
-    default T maxWith(Comparator<T> comparator) {
+    default T max(Comparator<T> comparator) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
@@ -343,7 +343,7 @@ public interface IterableBoost<T> extends Iterable<T> {
         return new Pair<>(min, minValue);
     }
 
-    default T minWith(Comparator<T> comparator) {
+    default T min(Comparator<T> comparator) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;

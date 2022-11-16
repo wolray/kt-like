@@ -194,8 +194,20 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         });
     }
 
+    default Seq<T> filterNot(Predicate<T> predicate) {
+        return filter(predicate.negate());
+    }
+
     default Seq<T> filterNotNull() {
         return filter(Objects::nonNull);
+    }
+
+    default Seq<T> filterIn(Collection<T> collection) {
+        return filter(collection::contains);
+    }
+
+    default Seq<T> filterNotIn(Collection<T> collection) {
+        return filterNot(t -> !collection.contains(t));
     }
 
     default Seq<T> distinct() {
@@ -252,6 +264,32 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
 
     default Seq<T> cache(int batchSize) {
         return this instanceof Backed ? this : new Backed<>(toBatchList(batchSize));
+    }
+
+    default Seq<T> sort() {
+        return sort(null);
+    }
+
+    default Seq<T> sort(Comparator<T> comparator) {
+        List<T> list = toList();
+        list.sort(comparator);
+        return of(list);
+    }
+
+    default Seq<T> sortDesc() {
+        return sort(Collections.reverseOrder());
+    }
+
+    default Seq<T> sortDesc(Comparator<T> comparator) {
+        return sort(comparator.reversed());
+    }
+
+    default <E extends Comparable<E>> Seq<Pair<T, E>> sortBy(Function<T, E> function) {
+        return map(t -> new Pair<>(t, function.apply(t))).sort(Comparator.comparing(p -> p.second));
+    }
+
+    default <E extends Comparable<E>> Seq<Pair<T, E>> sortByDesc(Function<T, E> function) {
+        return map(t -> new Pair<>(t, function.apply(t))).sortDesc(Comparator.comparing(p -> p.second));
     }
 
     default <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
