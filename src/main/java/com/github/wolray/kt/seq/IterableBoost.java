@@ -179,15 +179,6 @@ public interface IterableBoost<T> extends Iterable<T> {
         return res;
     }
 
-    default boolean all(Predicate<T> predicate) {
-        for (T t : this) {
-            if (!predicate.test(t)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     default boolean any(Predicate<T> predicate) {
         for (T t : this) {
             if (predicate.test(t)) {
@@ -195,6 +186,10 @@ public interface IterableBoost<T> extends Iterable<T> {
             }
         }
         return false;
+    }
+
+    default boolean anyNot(Predicate<T> predicate) {
+        return any(predicate.negate());
     }
 
     default boolean none(Predicate<T> predicate) {
@@ -206,12 +201,20 @@ public interface IterableBoost<T> extends Iterable<T> {
         return true;
     }
 
+    default boolean all(Predicate<T> predicate) {
+        return none(predicate.negate());
+    }
+
     default int count() {
         int c = 0;
         for (T ignored : this) {
             c++;
         }
         return c;
+    }
+
+    default int countNot(Predicate<T> predicate) {
+        return count(predicate.negate());
     }
 
     default int count(Predicate<T> predicate) {
@@ -297,6 +300,10 @@ public interface IterableBoost<T> extends Iterable<T> {
             }
         }
         return null;
+    }
+
+    default T firstNot(Predicate<T> predicate) {
+        return first(predicate.negate());
     }
 
     default void printAll() {
