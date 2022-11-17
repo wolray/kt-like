@@ -15,7 +15,7 @@ public class Timing {
     public static <T> LongPair<T> measure(Supplier<T> supplier) {
         long tic = now();
         T t = supplier.get();
-        return new LongPair<>(now() - tic, t);
+        return new LongPair<>(t, now() - tic);
     }
 
     public static long measure(Runnable runnable) {

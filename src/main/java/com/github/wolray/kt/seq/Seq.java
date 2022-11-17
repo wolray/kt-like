@@ -182,6 +182,18 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         });
     }
 
+    default <E> Seq<Pair<T, E>> attach(Function<T, E> function) {
+        return () -> MapItr.of(iterator(), t -> new Pair<>(t, function.apply(t)));
+    }
+
+    default Seq<IntPair<T>> attachInt(ToIntFunction<T> function) {
+        return () -> MapItr.of(iterator(), t -> new IntPair<>(t, function.applyAsInt(t)));
+    }
+
+    default Seq<LongPair<T>> attachLong(ToLongFunction<T> function) {
+        return () -> MapItr.of(iterator(), t -> new LongPair<>(t, function.applyAsLong(t)));
+    }
+
     default Seq<T> filter(Predicate<T> predicate) {
         return recur(itr -> {
             while (itr.hasNext()) {
@@ -284,12 +296,20 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return sort(comparator.reversed());
     }
 
-    default <E extends Comparable<E>> Seq<Pair<T, E>> sortBy(Function<T, E> function) {
-        return map(t -> new Pair<>(t, function.apply(t))).sort(Comparator.comparing(p -> p.second));
+    default <E extends Comparable<E>> Seq<T> sortBy(Function<T, E> function) {
+        return sort(Comparator.comparing(function));
     }
 
-    default <E extends Comparable<E>> Seq<Pair<T, E>> sortByDesc(Function<T, E> function) {
-        return map(t -> new Pair<>(t, function.apply(t))).sortDesc(Comparator.comparing(p -> p.second));
+    default <E extends Comparable<E>> Seq<T> sortDescBy(Function<T, E> function) {
+        return sort(Comparator.comparing(function).reversed());
+    }
+
+    default <E extends Comparable<E>> Seq<Pair<T, E>> sortWith(Function<T, E> function) {
+        return attach(function).sortBy(p -> p.second);
+    }
+
+    default <E extends Comparable<E>> Seq<Pair<T, E>> sortDescWith(Function<T, E> function) {
+        return attach(function).sortDescBy(p -> p.second);
     }
 
     default <R> Seq<R> flatMap(Function<T, Iterable<R>> function) {
@@ -306,7 +326,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default Seq<IntPair<T>> withIndex() {
-        return () -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(a[0]++, t));
+        return () -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(t, a[0]++));
     }
 
     default <B> Seq<Pair<T, B>> zip(Iterable<B> bs) {

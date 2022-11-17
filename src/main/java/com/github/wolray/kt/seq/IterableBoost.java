@@ -303,7 +303,7 @@ public interface IterableBoost<T> extends Iterable<T> {
         forEach(System.out::println);
     }
 
-    default <V extends Comparable<V>> Pair<T, V> maxOf(Function<T, V> function) {
+    default <V extends Comparable<V>> Pair<T, V> maxWith(Function<T, V> function) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
@@ -321,6 +321,10 @@ public interface IterableBoost<T> extends Iterable<T> {
         return new Pair<>(max, maxValue);
     }
 
+    default <V extends Comparable<V>> T maxBy(Function<T, V> function) {
+        return max(Comparator.comparing(function));
+    }
+
     default T max(Comparator<T> comparator) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
@@ -336,7 +340,7 @@ public interface IterableBoost<T> extends Iterable<T> {
         return max;
     }
 
-    default <V extends Comparable<V>> Pair<T, V> minOf(Function<T, V> function) {
+    default <V extends Comparable<V>> Pair<T, V> minWith(Function<T, V> function) {
         Iterator<T> iterator = iterator();
         if (!iterator.hasNext()) {
             return null;
@@ -352,6 +356,10 @@ public interface IterableBoost<T> extends Iterable<T> {
             }
         }
         return new Pair<>(min, minValue);
+    }
+
+    default <V extends Comparable<V>> T minBy(Function<T, V> function) {
+        return min(Comparator.comparing(function));
     }
 
     default T min(Comparator<T> comparator) {
