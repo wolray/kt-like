@@ -213,10 +213,6 @@ public interface IterableBoost<T> extends Iterable<T> {
         return c;
     }
 
-    default int countNot(Predicate<T> predicate) {
-        return count(predicate.negate());
-    }
-
     default int count(Predicate<T> predicate) {
         int c = 0;
         for (T t : this) {
@@ -225,6 +221,10 @@ public interface IterableBoost<T> extends Iterable<T> {
             }
         }
         return c;
+    }
+
+    default int countNot(Predicate<T> predicate) {
+        return count(predicate.negate());
     }
 
     default double sum(ToDoubleFunction<T> function) {
