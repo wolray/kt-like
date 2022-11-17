@@ -219,7 +219,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default Seq<T> filterNotIn(Collection<T> collection) {
-        return filterNot(t -> !collection.contains(t));
+        return filterNot(collection::contains);
     }
 
     default Seq<T> distinct() {
