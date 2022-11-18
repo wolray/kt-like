@@ -1,9 +1,7 @@
 package com.github.wolray.kt.util;
 
 import com.github.wolray.kt.lazy.LazyJob;
-import com.github.wolray.kt.lazy.LazySeq;
 import com.github.wolray.kt.lazy.LazyVar;
-import com.github.wolray.kt.seq.Seq;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -22,9 +20,5 @@ public class Lazies {
 
     public static LazyJob lazyJob(Runnable runnable) {
         return new LazyJob(runnable);
-    }
-
-    public static <T> LazySeq<T> lazySeq(Supplier<Iterable<T>> supplier) {
-        return new LazySeq<>(() -> Seq.of(supplier.get()));
     }
 }

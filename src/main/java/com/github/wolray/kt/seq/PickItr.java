@@ -95,18 +95,18 @@ public abstract class PickItr<T> implements Iterator<T> {
         };
     }
 
-    public static <T> PickItr<List<T>> window(Iterator<T> iterator, int size) {
+    public static <T> PickItr<SeqList<T>> window(Iterator<T> iterator, int size) {
         return gen(() -> {
             if (!iterator.hasNext()) {
                 stop();
             }
-            List<T> res = new ArrayList<>(size);
+            List<T> list = new ArrayList<>(size);
             int n = size;
             while (iterator.hasNext() && n > 0) {
-                res.add(iterator.next());
+                list.add(iterator.next());
                 n--;
             }
-            return res;
+            return new SeqList<>(list);
         });
     }
 

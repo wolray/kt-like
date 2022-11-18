@@ -44,75 +44,58 @@ public interface IterableBoost<T> extends Iterable<T> {
         return des;
     }
 
-    default List<T> filterTo(Predicate<T> predicate) {
-        return filterTo(new ArrayList<>(), predicate);
-    }
-
-    default List<T> filterTo(List<T> des, Predicate<T> predicate) {
-        for (T t : this) {
-            if (predicate.test(t)) {
-                des.add(t);
-            }
-        }
-        return des;
-    }
-
-    default <K, V> Map<K, V> toMap(Function<T, K> kFunction, Function<T, V> vFunction) {
+    default <K, V> SeqMap<K, V> toMap(Function<T, K> kFunction, Function<T, V> vFunction) {
         return toMap(new HashMap<>(sizeOrDefault()), kFunction, vFunction);
     }
 
-    default <K> Map<K, T> toMapBy(Function<T, K> kFunction) {
+    default <K> SeqMap<K, T> toMapBy(Function<T, K> kFunction) {
         return toMapBy(new HashMap<>(sizeOrDefault()), kFunction);
     }
 
-    default <V> Map<T, V> toMapWith(Function<T, V> vFunction) {
+    default <V> SeqMap<T, V> toMapWith(Function<T, V> vFunction) {
         return toMapWith(new HashMap<>(sizeOrDefault()), vFunction);
     }
 
-    default <K, V> Map<K, V> toMap(Map<K, V> des,
+    default <K, V> SeqMap<K, V> toMap(Map<K, V> des,
         Function<T, K> kFunction,
         Function<T, V> vFunction) {
-        return foldBy(des, (res, t) ->
-            res.put(kFunction.apply(t), vFunction.apply(t)));
+        return new SeqMap<>(foldBy(des, (res, t) ->
+            res.put(kFunction.apply(t), vFunction.apply(t))));
     }
 
-    default <K> Map<K, T> toMapBy(Map<K, T> des, Function<T, K> kFunction) {
-        return foldBy(des, (res, t) -> res.put(kFunction.apply(t), t));
+    default <K> SeqMap<K, T> toMapBy(Map<K, T> des, Function<T, K> kFunction) {
+        return new SeqMap<>(foldBy(des, (res, t) -> res.put(kFunction.apply(t), t)));
     }
 
-    default <V> Map<T, V> toMapWith(Map<T, V> des, Function<T, V> vFunction) {
-        return foldBy(des, (res, t) -> res.put(t, vFunction.apply(t)));
+    default <V> SeqMap<T, V> toMapWith(Map<T, V> des, Function<T, V> vFunction) {
+        return new SeqMap<>(foldBy(des, (res, t) -> res.put(t, vFunction.apply(t))));
     }
 
-    default <E> ArrayList<E> mapTo(Function<T, E> function) {
-        return toCollection(new ArrayList<>(sizeOrDefault()), function);
+    default SeqSet<T> toSet() {
+        return new SeqSet<>(toCollection(new HashSet<>(sizeOrDefault())));
     }
 
-    default <E, C extends Collection<E>> C mapTo(C des, Function<T, E> function) {
-        return toCollection(des, function);
+    default <E> SeqSet<E> toSet(Function<T, E> function) {
+        return new SeqSet<>(toCollection(new HashSet<>(sizeOrDefault()), function));
     }
 
-    default HashSet<T> toSet() {
-        return toCollection(new HashSet<>(sizeOrDefault()));
+    default SeqList<T> toList() {
+        if (this instanceof Seq.Backed) {
+            Collection<T> collection = ((Seq.Backed<T>)this)._collection();
+            return new SeqList<>(new ArrayList<>(collection));
+        }
+        return new SeqList<>(toCollection(new ArrayList<>(sizeOrDefault())));
     }
 
-    default <E> HashSet<E> toSet(Function<T, E> function) {
-        return toCollection(new HashSet<>(sizeOrDefault()), function);
-    }
-
-    default ArrayList<T> toList() {
-        return toCollection(new ArrayList<>(sizeOrDefault()));
-    }
-
-    default List<T> toSinglyList() {
+    default SinglyList<T> toSinglyList() {
         return toCollection(new SinglyList<>());
     }
 
-    default List<T> toBatchList() {
+    default BatchList<T> toBatchList() {
         return toCollection(new BatchList<>());
     }
 
-    default List<T> toBatchList(int batchSize) {
+    default BatchList<T> toBatchList(int batchSize) {
         return toCollection(new BatchList<>(batchSize));
     }
 
@@ -151,9 +134,9 @@ public interface IterableBoost<T> extends Iterable<T> {
         }
     }
 
-    default Pair<List<T>, List<T>> partition(Predicate<T> predicate) {
-        List<T> trueList = new BatchList<>();
-        List<T> falseList = new BatchList<>();
+    default Pair<SeqList<T>, SeqList<T>> partition(Predicate<T> predicate) {
+        SeqList<T> trueList = new SeqList<>(new BatchList<>());
+        SeqList<T> falseList = new SeqList<>(new BatchList<>());
         for (T t : this) {
             if (predicate.test(t)) {
                 trueList.add(t);

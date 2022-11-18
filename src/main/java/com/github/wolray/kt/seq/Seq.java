@@ -14,7 +14,8 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
             return (Seq<T>)iterable;
         }
         if (iterable instanceof Collection<?>) {
-            return new Backed<>((Collection<T>)iterable);
+            Collection<T> collection = (Collection<T>)iterable;
+            return (Backed<T>)() -> collection;
         }
         return iterable::iterator;
     }
@@ -130,7 +131,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     @Override
-    default Seq<T> get() {
+    default Seq<T> self() {
         return this;
     }
 
@@ -258,7 +259,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return () -> PickItr.dropWhile(iterator(), predicate);
     }
 
-    default Seq<List<T>> chunked(int size) {
+    default Seq<SeqList<T>> chunked(int size) {
         return () -> PickItr.window(iterator(), size);
     }
 
@@ -270,45 +271,37 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return map(Functions.asUnaryOp(consumer));
     }
 
-    default Seq<T> cache() {
-        return cache(10);
+    default SeqList<T> sort() {
+        return sortOf(null);
     }
 
-    default Seq<T> cache(int batchSize) {
-        return this instanceof Backed ? this : new Backed<>(toBatchList(batchSize));
+    default SeqList<T> sortOf(Comparator<T> comparator) {
+        SeqList<T> list = toList();
+        list.list.sort(comparator);
+        return list;
     }
 
-    default Seq<T> sort() {
-        return sort(null);
+    default SeqList<T> sortDesc() {
+        return sortOf(Collections.reverseOrder());
     }
 
-    default Seq<T> sort(Comparator<T> comparator) {
-        List<T> list = toList();
-        list.sort(comparator);
-        return of(list);
+    default SeqList<T> sortDesc(Comparator<T> comparator) {
+        return sortOf(comparator.reversed());
     }
 
-    default Seq<T> sortDesc() {
-        return sort(Collections.reverseOrder());
+    default <E extends Comparable<E>> SeqList<T> sortBy(Function<T, E> function) {
+        return sortOf(Comparator.comparing(function));
     }
 
-    default Seq<T> sortDesc(Comparator<T> comparator) {
-        return sort(comparator.reversed());
+    default <E extends Comparable<E>> SeqList<T> sortDescBy(Function<T, E> function) {
+        return sortOf(Comparator.comparing(function).reversed());
     }
 
-    default <E extends Comparable<E>> Seq<T> sortBy(Function<T, E> function) {
-        return sort(Comparator.comparing(function));
-    }
-
-    default <E extends Comparable<E>> Seq<T> sortDescBy(Function<T, E> function) {
-        return sort(Comparator.comparing(function).reversed());
-    }
-
-    default <E extends Comparable<E>> Seq<Pair<T, E>> sortWith(Function<T, E> function) {
+    default <E extends Comparable<E>> SeqList<Pair<T, E>> sortWith(Function<T, E> function) {
         return attach(function).sortBy(p -> p.second);
     }
 
-    default <E extends Comparable<E>> Seq<Pair<T, E>> sortDescWith(Function<T, E> function) {
+    default <E extends Comparable<E>> SeqList<Pair<T, E>> sortDescWith(Function<T, E> function) {
         return attach(function).sortDescBy(p -> p.second);
     }
 
@@ -368,25 +361,21 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         }
     }
 
-    class Backed<T> implements Seq<T> {
-        private final Collection<T> collection;
-
-        Backed(Collection<T> collection) {
-            this.collection = collection;
-        }
+    interface Backed<T> extends Seq<T> {
+        Collection<T> collection();
 
         static boolean outSize(IterableBoost<?> boost, int n) {
             return boost instanceof Backed && n >= boost.sizeOrDefault();
         }
 
         @Override
-        public int sizeOrDefault() {
-            return collection.size();
+        default int sizeOrDefault() {
+            return collection().size();
         }
 
         @Override
-        public Iterator<T> iterator() {
-            return collection.iterator();
+        default Iterator<T> iterator() {
+            return collection().iterator();
         }
     }
 
