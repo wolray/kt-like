@@ -5,152 +5,149 @@ import java.util.*;
 /**
  * @author wolray
  */
-public class SeqList<T> implements List<T>, Seq.Backed<T> {
-    public final List<T> list;
+public interface SeqList<T> extends List<T>, Seq.Backed<T> {
+    List<T> proxy();
+    String toString();
 
-    SeqList(List<T> list) {
-        this.list = list;
-    }
+    static <T> SeqList<T> of(List<T> list) {
+        return list instanceof SeqList ? (SeqList<T>)list : new SeqList<T>() {
+            @Override
+            public List<T> proxy() {
+                return list;
+            }
 
-    public static <T> SeqList<T> of(List<T> list) {
-        return list instanceof SeqList ? (SeqList<T>)list : new SeqList<>(list);
+            @Override
+            public String toString() {
+                return list.toString();
+            }
+        };
     }
 
     @SafeVarargs
-    public static <T> SeqList<T> of(T... ts) {
-        return new SeqList<>(Arrays.asList(ts));
+    static <T> SeqList<T> of(T... ts) {
+        return of(Arrays.asList(ts));
     }
 
-    public static <T> SeqList<T> array() {
-        return new SeqList<>(new ArrayList<>());
+    static <T> SeqList<T> array() {
+        return of(new ArrayList<>());
     }
 
-    public static <T> SeqList<T> linked() {
-        return new SeqList<>(new LinkedList<>());
-    }
-
-    @Override
-    public Collection<T> collection() {
-        return list;
+    static <T> SeqList<T> linked() {
+        return of(new LinkedList<>());
     }
 
     @Override
-    public String toString() {
-        return list.toString();
+    default int size() {
+        return proxy().size();
     }
 
     @Override
-    public int size() {
-        return list.size();
+    default boolean isEmpty() {
+        return proxy().isEmpty();
     }
 
     @Override
-    public boolean isEmpty() {
-        return list.isEmpty();
+    default boolean contains(Object o) {
+        return proxy().contains(o);
     }
 
     @Override
-    public boolean contains(Object o) {
-        return list.contains(o);
+    default Iterator<T> iterator() {
+        return proxy().iterator();
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return list.iterator();
+    default Object[] toArray() {
+        return proxy().toArray();
     }
 
     @Override
-    public Object[] toArray() {
-        return list.toArray();
+    default <E> E[] toArray(E[] a) {
+        return proxy().toArray(a);
     }
 
     @Override
-    public <E> E[] toArray(E[] a) {
-        return list.toArray(a);
+    default boolean add(T t) {
+        return proxy().add(t);
     }
 
     @Override
-    public boolean add(T t) {
-        return list.add(t);
+    default boolean remove(Object o) {
+        return proxy().remove(o);
     }
 
     @Override
-    public boolean remove(Object o) {
-        return list.remove(o);
+    default boolean containsAll(Collection<?> c) {
+        return proxy().containsAll(c);
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
-        return list.containsAll(c);
+    default boolean addAll(Collection<? extends T> c) {
+        return proxy().addAll(c);
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) {
-        return list.addAll(c);
+    default boolean addAll(int index, Collection<? extends T> c) {
+        return proxy().addAll(c);
     }
 
     @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
-        return list.addAll(c);
+    default boolean removeAll(Collection<?> c) {
+        return proxy().removeAll(c);
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
-        return list.removeAll(c);
+    default boolean retainAll(Collection<?> c) {
+        return proxy().retainAll(c);
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
-        return list.retainAll(c);
+    default void clear() {
+        proxy().clear();
     }
 
     @Override
-    public void clear() {
-        list.clear();
+    default T get(int index) {
+        return proxy().get(index);
     }
 
     @Override
-    public T get(int index) {
-        return list.get(index);
+    default T set(int index, T element) {
+        return proxy().set(index, element);
     }
 
     @Override
-    public T set(int index, T element) {
-        return list.set(index, element);
+    default void add(int index, T element) {
+        proxy().add(index, element);
     }
 
     @Override
-    public void add(int index, T element) {
-        list.add(index, element);
+    default T remove(int index) {
+        return proxy().remove(index);
     }
 
     @Override
-    public T remove(int index) {
-        return list.remove(index);
+    default int indexOf(Object o) {
+        return proxy().indexOf(o);
     }
 
     @Override
-    public int indexOf(Object o) {
-        return list.indexOf(o);
+    default int lastIndexOf(Object o) {
+        return proxy().lastIndexOf(o);
     }
 
     @Override
-    public int lastIndexOf(Object o) {
-        return list.lastIndexOf(o);
+    default ListIterator<T> listIterator() {
+        return proxy().listIterator();
     }
 
     @Override
-    public ListIterator<T> listIterator() {
-        return list.listIterator();
+    default ListIterator<T> listIterator(int index) {
+        return proxy().listIterator(index);
     }
 
     @Override
-    public ListIterator<T> listIterator(int index) {
-        return list.listIterator(index);
-    }
-
-    @Override
-    public List<T> subList(int fromIndex, int toIndex) {
-        return list.subList(fromIndex, toIndex);
+    default List<T> subList(int fromIndex, int toIndex) {
+        return proxy().subList(fromIndex, toIndex);
     }
 }

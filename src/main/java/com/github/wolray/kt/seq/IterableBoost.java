@@ -13,7 +13,7 @@ public interface IterableBoost<T> extends Iterable<T> {
         return 10;
     }
 
-    default T get(int index) {
+    default T getAt(int index) {
         if (Seq.Backed.outSize(this, index)) {
             throw new IndexOutOfBoundsException(Integer.toString(index));
         }
@@ -59,32 +59,32 @@ public interface IterableBoost<T> extends Iterable<T> {
     default <K, V> SeqMap<K, V> toMap(Map<K, V> des,
         Function<T, K> kFunction,
         Function<T, V> vFunction) {
-        return new SeqMap<>(foldBy(des, (res, t) ->
+        return SeqMap.of(foldBy(des, (res, t) ->
             res.put(kFunction.apply(t), vFunction.apply(t))));
     }
 
     default <K> SeqMap<K, T> toMapBy(Map<K, T> des, Function<T, K> kFunction) {
-        return new SeqMap<>(foldBy(des, (res, t) -> res.put(kFunction.apply(t), t)));
+        return SeqMap.of(foldBy(des, (res, t) -> res.put(kFunction.apply(t), t)));
     }
 
     default <V> SeqMap<T, V> toMapWith(Map<T, V> des, Function<T, V> vFunction) {
-        return new SeqMap<>(foldBy(des, (res, t) -> res.put(t, vFunction.apply(t))));
+        return SeqMap.of(foldBy(des, (res, t) -> res.put(t, vFunction.apply(t))));
     }
 
     default SeqSet<T> toSet() {
-        return new SeqSet<>(toCollection(new HashSet<>(sizeOrDefault())));
+        return SeqSet.of(toCollection(new HashSet<>(sizeOrDefault())));
     }
 
     default <E> SeqSet<E> toSet(Function<T, E> function) {
-        return new SeqSet<>(toCollection(new HashSet<>(sizeOrDefault()), function));
+        return SeqSet.of(toCollection(new HashSet<>(sizeOrDefault()), function));
     }
 
     default SeqList<T> toList() {
         if (this instanceof Seq.Backed) {
-            Collection<T> collection = ((Seq.Backed<T>)this).collection();
-            return new SeqList<>(new ArrayList<>(collection));
+            Collection<T> collection = ((Seq.Backed<T>)this).proxy();
+            return SeqList.of(new ArrayList<>(collection));
         }
-        return new SeqList<>(toCollection(new ArrayList<>(sizeOrDefault())));
+        return SeqList.of(toCollection(new ArrayList<>(sizeOrDefault())));
     }
 
     default SinglyList<T> toSinglyList() {
@@ -134,9 +134,9 @@ public interface IterableBoost<T> extends Iterable<T> {
         }
     }
 
-    default Pair<SeqList<T>, SeqList<T>> partition(Predicate<T> predicate) {
-        SeqList<T> trueList = new SeqList<>(new BatchList<>());
-        SeqList<T> falseList = new SeqList<>(new BatchList<>());
+    default Pair<BatchList<T>, BatchList<T>> partition(Predicate<T> predicate) {
+        BatchList<T> trueList = new BatchList<>();
+        BatchList<T> falseList = new BatchList<>();
         for (T t : this) {
             if (predicate.test(t)) {
                 trueList.add(t);

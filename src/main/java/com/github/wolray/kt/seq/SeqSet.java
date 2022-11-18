@@ -7,89 +7,85 @@ import java.util.Set;
 /**
  * @author wolray
  */
-public class SeqSet<T> implements Set<T>, Seq.Backed<T> {
-    public final Set<T> set;
+public interface SeqSet<T> extends Set<T>, Seq.Backed<T> {
+    Set<T> proxy();
 
-    SeqSet(Set<T> set) {
-        this.set = set;
-    }
+    static <T> SeqSet<T> of(Set<T> set) {
+        return set instanceof SeqSet ? (SeqSet<T>)set : new SeqSet<T>() {
+            @Override
+            public Set<T> proxy() {
+                return set;
+            }
 
-    public static <T> SeqSet<T> of(Set<T> set) {
-        return set instanceof SeqSet ? (SeqSet<T>)set : new SeqSet<>(set);
-    }
-
-    @Override
-    public Collection<T> collection() {
-        return set;
-    }
-
-    @Override
-    public String toString() {
-        return set.toString();
+            @Override
+            public String toString() {
+                return set.toString();
+            }
+        };
     }
 
     @Override
-    public int size() {
-        return set.size();
+    default int size() {
+        return proxy().size();
     }
 
     @Override
-    public boolean isEmpty() {
-        return set.isEmpty();
+    default boolean isEmpty() {
+        return proxy().isEmpty();
     }
 
     @Override
-    public boolean contains(Object o) {
-        return set.contains(o);
+    default boolean contains(Object o) {
+        return proxy().contains(o);
     }
 
     @Override
-    public Iterator<T> iterator() {
-        return set.iterator();
+    default Iterator<T> iterator() {
+        return proxy().iterator();
     }
 
     @Override
-    public Object[] toArray() {
-        return set.toArray();
+    default Object[] toArray() {
+        return proxy().toArray();
     }
 
     @Override
-    public <E> E[] toArray(E[] a) {
-        return set.toArray(a);
+    default <E> E[] toArray(E[] a) {
+        return proxy().toArray(a);
     }
 
     @Override
-    public boolean add(T t) {
-        return set.add(t);
+    default boolean add(T t) {
+        return proxy().add(t);
     }
 
     @Override
-    public boolean remove(Object o) {
-        return set.remove(o);
+    default boolean remove(Object o) {
+        return proxy().remove(o);
     }
 
     @Override
-    public boolean containsAll(Collection<?> c) {
-        return set.containsAll(c);
+    default boolean containsAll(Collection<?> c) {
+        return proxy().containsAll(c);
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> c) {
-        return set.addAll(c);
+    default boolean addAll(Collection<? extends T> c) {
+        return proxy().addAll(c);
     }
 
     @Override
-    public boolean retainAll(Collection<?> c) {
-        return set.retainAll(c);
+    default boolean retainAll(Collection<?> c) {
+        return proxy().retainAll(c);
     }
 
     @Override
-    public boolean removeAll(Collection<?> c) {
-        return set.removeAll(c);
+    default boolean removeAll(Collection<?> c) {
+        return proxy().removeAll(c);
     }
 
     @Override
-    public void clear() {
-        set.clear();
+    default void clear() {
+        proxy().clear();
     }
 }

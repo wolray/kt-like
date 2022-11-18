@@ -106,7 +106,7 @@ public abstract class PickItr<T> implements Iterator<T> {
                 list.add(iterator.next());
                 n--;
             }
-            return new SeqList<>(list);
+            return SeqList.of(list);
         });
     }
 

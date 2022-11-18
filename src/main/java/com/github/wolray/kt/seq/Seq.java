@@ -277,7 +277,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
 
     default SeqList<T> sortOf(Comparator<T> comparator) {
         SeqList<T> list = toList();
-        list.list.sort(comparator);
+        list.proxy().sort(comparator);
         return list;
     }
 
@@ -362,7 +362,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     interface Backed<T> extends Seq<T> {
-        Collection<T> collection();
+        Collection<T> proxy();
 
         static boolean outSize(IterableBoost<?> boost, int n) {
             return boost instanceof Backed && n >= boost.sizeOrDefault();
@@ -370,12 +370,12 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
 
         @Override
         default int sizeOrDefault() {
-            return collection().size();
+            return proxy().size();
         }
 
         @Override
         default Iterator<T> iterator() {
-            return collection().iterator();
+            return proxy().iterator();
         }
     }
 

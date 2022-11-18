@@ -1,19 +1,19 @@
 package com.github.wolray.kt.seq;
 
 import java.util.AbstractList;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author wolray
  */
-public class SinglyList<T> extends AbstractList<T> implements Seq.Backed<T> {
+public class SinglyList<T> extends AbstractList<T> implements SeqList<T> {
     private transient Node<T> dummy = new Node<>();
     private transient Node<T> last = dummy;
     private transient int size = 0;
 
     @Override
-    public Collection<T> collection() {
+    public List<T> proxy() {
         return this;
     }
 

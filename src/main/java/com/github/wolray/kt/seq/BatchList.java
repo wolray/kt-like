@@ -2,13 +2,13 @@ package com.github.wolray.kt.seq;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author wolray
  */
-public class BatchList<T> extends AbstractList<T> implements Seq.Backed<T> {
+public class BatchList<T> extends AbstractList<T> implements SeqList<T> {
     private transient final SinglyList<ArrayList<T>> list = new SinglyList<>();
     private transient final int batchSize;
     private transient int size;
@@ -23,7 +23,7 @@ public class BatchList<T> extends AbstractList<T> implements Seq.Backed<T> {
     }
 
     @Override
-    public Collection<T> collection() {
+    public List<T> proxy() {
         return this;
     }
 

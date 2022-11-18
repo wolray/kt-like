@@ -58,4 +58,14 @@ public class SeqTest {
             .yieldAll(Collections.singletonList(10))
             .yield(11)).assertTo(2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
     }
+
+    @Test
+    public void testSeqList() {
+        SeqList<Integer> list = SeqList.array();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        list.set(0, 6);
+        System.out.println(list);
+    }
 }
