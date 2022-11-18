@@ -25,6 +25,10 @@ public class LazyVar<T> implements Supplier<T> {
         return new LazyVar<>(supplier).then(consumer);
     }
 
+    public boolean isLoaded() {
+        return value != null;
+    }
+
     @Override
     public synchronized T get() {
         if (value == null) {
