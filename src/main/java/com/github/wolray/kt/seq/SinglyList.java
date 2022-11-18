@@ -13,7 +13,7 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T> {
     private transient int size = 0;
 
     @Override
-    public List<T> proxy() {
+    public List<T> backer() {
         return this;
     }
 

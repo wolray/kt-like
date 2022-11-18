@@ -9,13 +9,14 @@ import java.util.List;
  * @author wolray
  */
 public class BatchList<T> extends AbstractList<T> implements SeqList<T> {
+    public static final int DEFAULT_SIZE = 10;
     private transient final SinglyList<ArrayList<T>> list = new SinglyList<>();
     private transient final int batchSize;
     private transient int size;
     private transient ArrayList<T> cur;
 
     public BatchList() {
-        this(10);
+        this(DEFAULT_SIZE);
     }
 
     public BatchList(int batchSize) {
@@ -23,7 +24,7 @@ public class BatchList<T> extends AbstractList<T> implements SeqList<T> {
     }
 
     @Override
-    public List<T> proxy() {
+    public List<T> backer() {
         return this;
     }
 

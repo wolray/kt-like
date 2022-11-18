@@ -6,13 +6,13 @@ import java.util.*;
  * @author wolray
  */
 public interface SeqList<T> extends List<T>, Seq.Backed<T> {
-    List<T> proxy();
+    List<T> backer();
     String toString();
 
     static <T> SeqList<T> of(List<T> list) {
         return list instanceof SeqList ? (SeqList<T>)list : new SeqList<T>() {
             @Override
-            public List<T> proxy() {
+            public List<T> backer() {
                 return list;
             }
 
@@ -38,116 +38,116 @@ public interface SeqList<T> extends List<T>, Seq.Backed<T> {
 
     @Override
     default int size() {
-        return proxy().size();
+        return backer().size();
     }
 
     @Override
     default boolean isEmpty() {
-        return proxy().isEmpty();
+        return backer().isEmpty();
     }
 
     @Override
     default boolean contains(Object o) {
-        return proxy().contains(o);
+        return backer().contains(o);
     }
 
     @Override
     default Iterator<T> iterator() {
-        return proxy().iterator();
+        return backer().iterator();
     }
 
     @Override
     default Object[] toArray() {
-        return proxy().toArray();
+        return backer().toArray();
     }
 
     @Override
     default <E> E[] toArray(E[] a) {
-        return proxy().toArray(a);
+        return backer().toArray(a);
     }
 
     @Override
     default boolean add(T t) {
-        return proxy().add(t);
+        return backer().add(t);
     }
 
     @Override
     default boolean remove(Object o) {
-        return proxy().remove(o);
+        return backer().remove(o);
     }
 
     @Override
     default boolean containsAll(Collection<?> c) {
-        return proxy().containsAll(c);
+        return backer().containsAll(c);
     }
 
     @Override
     default boolean addAll(Collection<? extends T> c) {
-        return proxy().addAll(c);
+        return backer().addAll(c);
     }
 
     @Override
     default boolean addAll(int index, Collection<? extends T> c) {
-        return proxy().addAll(c);
+        return backer().addAll(c);
     }
 
     @Override
     default boolean removeAll(Collection<?> c) {
-        return proxy().removeAll(c);
+        return backer().removeAll(c);
     }
 
     @Override
     default boolean retainAll(Collection<?> c) {
-        return proxy().retainAll(c);
+        return backer().retainAll(c);
     }
 
     @Override
     default void clear() {
-        proxy().clear();
+        backer().clear();
     }
 
     @Override
     default T get(int index) {
-        return proxy().get(index);
+        return backer().get(index);
     }
 
     @Override
     default T set(int index, T element) {
-        return proxy().set(index, element);
+        return backer().set(index, element);
     }
 
     @Override
     default void add(int index, T element) {
-        proxy().add(index, element);
+        backer().add(index, element);
     }
 
     @Override
     default T remove(int index) {
-        return proxy().remove(index);
+        return backer().remove(index);
     }
 
     @Override
     default int indexOf(Object o) {
-        return proxy().indexOf(o);
+        return backer().indexOf(o);
     }
 
     @Override
     default int lastIndexOf(Object o) {
-        return proxy().lastIndexOf(o);
+        return backer().lastIndexOf(o);
     }
 
     @Override
     default ListIterator<T> listIterator() {
-        return proxy().listIterator();
+        return backer().listIterator();
     }
 
     @Override
     default ListIterator<T> listIterator(int index) {
-        return proxy().listIterator(index);
+        return backer().listIterator(index);
     }
 
     @Override
     default List<T> subList(int fromIndex, int toIndex) {
-        return proxy().subList(fromIndex, toIndex);
+        return backer().subList(fromIndex, toIndex);
     }
 }

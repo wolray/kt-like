@@ -1,9 +1,6 @@
 package com.github.wolray.kt.seq;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author wolray
@@ -25,8 +22,16 @@ public interface SeqMap<K, V> extends Map<K, V>, Seq.Backed<Map.Entry<K, V>> {
         };
     }
 
+    static <K, V> SeqMap<K, V> hash() {
+        return of(new HashMap<>());
+    }
+
+    static <K, V> SeqMap<K, V> tree(Comparator<K> comparator) {
+        return of(new TreeMap<>(comparator));
+    }
+
     @Override
-    default Set<Entry<K, V>> proxy() {
+    default Set<Entry<K, V>> backer() {
         return map().entrySet();
     }
 

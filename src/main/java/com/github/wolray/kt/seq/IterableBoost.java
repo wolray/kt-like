@@ -81,7 +81,7 @@ public interface IterableBoost<T> extends Iterable<T> {
 
     default SeqList<T> toList() {
         if (this instanceof Seq.Backed) {
-            Collection<T> collection = ((Seq.Backed<T>)this).proxy();
+            Collection<T> collection = ((Seq.Backed<T>)this).backer();
             return SeqList.of(new ArrayList<>(collection));
         }
         return SeqList.of(toCollection(new ArrayList<>(sizeOrDefault())));

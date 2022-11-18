@@ -59,15 +59,11 @@ public class LazyVar<T> implements Supplier<T> {
         return this;
     }
 
-    public <E> LazyVar<E> map(Function<T, E> function) {
+    public <E> LazyVar<E> apply(Function<T, E> function) {
         return new LazyVar<>(() -> function.apply(get()));
     }
 
-    public <E> E mapTo(Function<T, E> function) {
-        return function.apply(get());
-    }
-
-    public <E> LazyVar<E> map(Function<T, E> function, BiConsumer<E, T> consumer) {
+    public <E> LazyVar<E> apply(Function<T, E> function, BiConsumer<E, T> consumer) {
         return new LazyVar<>(() -> {
             T t = get();
             E e = function.apply(t);

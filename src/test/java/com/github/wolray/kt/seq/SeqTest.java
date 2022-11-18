@@ -2,7 +2,9 @@ package com.github.wolray.kt.seq;
 
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -66,6 +68,7 @@ public class SeqTest {
         list.add(2);
         list.add(3);
         list.set(0, 6);
-        System.out.println(list);
+        list.add(2, 10);
+        list.assertTo(6, 2, 10, 3);
     }
 }
