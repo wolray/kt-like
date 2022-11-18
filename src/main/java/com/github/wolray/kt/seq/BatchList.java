@@ -23,7 +23,7 @@ public class BatchList<T> extends AbstractList<T> implements Seq.Backed<T> {
     }
 
     @Override
-    public Collection<T> _collection() {
+    public Collection<T> collection() {
         return this;
     }
 

@@ -13,7 +13,7 @@ public class SinglyList<T> extends AbstractList<T> implements Seq.Backed<T> {
     private transient int size = 0;
 
     @Override
-    public Collection<T> _collection() {
+    public Collection<T> collection() {
         return this;
     }
 
