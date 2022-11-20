@@ -9,14 +9,14 @@ import java.util.List;
  * @author wolray
  */
 public class BatchList<T> extends AbstractList<T> implements SeqList<T> {
-    public static final int DEFAULT_SIZE = 10;
+    public static final int DEFAULT_BATCH_SIZE = 10;
     private transient final SinglyList<ArrayList<T>> list = new SinglyList<>();
     private transient final int batchSize;
     private transient int size;
     private transient ArrayList<T> cur;
 
     public BatchList() {
-        this(DEFAULT_SIZE);
+        this(DEFAULT_BATCH_SIZE);
     }
 
     public BatchList(int batchSize) {

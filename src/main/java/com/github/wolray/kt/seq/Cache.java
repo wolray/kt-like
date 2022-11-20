@@ -15,7 +15,7 @@ public interface Cache<T> {
 
     interface Cacheable<T, S> extends Iterable<T>, Function<Iterable<T>, S> {
         default S cacheBy(Cache<T> cache) {
-            return cacheBy(BatchList.DEFAULT_SIZE, cache);
+            return cacheBy(BatchList.DEFAULT_BATCH_SIZE, cache);
         }
 
         default S cacheBy(int batchSize, Cache<T> cache) {

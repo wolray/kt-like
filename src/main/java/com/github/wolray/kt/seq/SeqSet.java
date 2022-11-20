@@ -7,6 +7,7 @@ import java.util.*;
  */
 public interface SeqSet<T> extends Set<T>, Seq.Backed<T> {
     Set<T> backer();
+    String toString();
 
     static <T> SeqSet<T> of(Set<T> set) {
         return set instanceof SeqSet ? (SeqSet<T>)set : new SeqSet<T>() {
