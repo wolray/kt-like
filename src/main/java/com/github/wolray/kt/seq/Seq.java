@@ -366,6 +366,16 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
             return boost instanceof Backed && n >= boost.sizeOrDefault();
         }
 
+        default boolean isNotEmpty() {
+            return !backer().isEmpty();
+        }
+
+        default void ifNotEmpty(Consumer<Seq<T>> consumer) {
+            if (isNotEmpty()) {
+                consumer.accept(this);
+            }
+        }
+
         @Override
         default int sizeOrDefault() {
             return backer().size();

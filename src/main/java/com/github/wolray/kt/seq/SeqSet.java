@@ -6,7 +6,9 @@ import java.util.*;
  * @author wolray
  */
 public interface SeqSet<T> extends Set<T>, Seq.Backed<T> {
+    @Override
     Set<T> backer();
+    @Override
     String toString();
 
     static <T> SeqSet<T> of(Set<T> set) {

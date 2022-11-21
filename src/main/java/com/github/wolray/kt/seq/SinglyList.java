@@ -1,13 +1,11 @@
 package com.github.wolray.kt.seq;
 
-import java.util.AbstractList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author wolray
  */
-public class SinglyList<T> extends AbstractList<T> implements SeqList<T> {
+public class SinglyList<T> extends AbstractList<T> implements SeqList<T>, Queue<T> {
     private transient Node<T> dummy = new Node<>();
     private transient Node<T> last = dummy;
     private transient int size = 0;
@@ -15,6 +13,11 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T> {
     @Override
     public List<T> backer() {
         return this;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return dummy.next == null;
     }
 
     @Override
@@ -34,10 +37,10 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T> {
 
     @Override
     public T get(int index) {
-        Node<T> node = dummy;
         if (index >= size) {
             throw new IndexOutOfBoundsException(String.format("%d >= %d", index, size));
         }
+        Node<T> node = dummy;
         for (int i = 0; i < index; i++) {
             node = node.next;
         }
@@ -71,6 +74,50 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T> {
         }
         dummy = last = null;
         size = 0;
+    }
+
+    @Override
+    public boolean offer(T t) {
+        return add(t);
+    }
+
+    @Override
+    public T remove() {
+        T t = poll();
+        if (t != null) {
+            return t;
+        }
+        throw new NoSuchElementException();
+    }
+
+    @Override
+    public T poll() {
+        Node<T> first = dummy.next;
+        if (first == null) {
+            return null;
+        }
+        dummy.next = first.next;
+        first.next = null;
+        size--;
+        return first.t;
+    }
+
+    @Override
+    public T element() {
+        T t = peek();
+        if (t != null) {
+            return t;
+        }
+        throw new NoSuchElementException();
+    }
+
+    @Override
+    public T peek() {
+        Node<T> first = dummy.next;
+        if (first != null) {
+            return first.t;
+        }
+        return null;
     }
 
     private static class Node<T> {

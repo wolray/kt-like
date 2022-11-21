@@ -22,11 +22,11 @@ public interface Cache<T> {
             if (cache.exists()) {
                 return apply(cache.read());
             } else {
-                List<T> list = new BatchList<>(batchSize);
+                BatchList<T> list = new BatchList<>(batchSize);
                 for (T t : this) {
                     list.add(t);
                 }
-                if (!list.isEmpty()) {
+                if (list.isNotEmpty()) {
                     cache.write(list);
                 }
                 return apply(list);

@@ -6,7 +6,9 @@ import java.util.*;
  * @author wolray
  */
 public interface SeqList<T> extends List<T>, Seq.Backed<T> {
+    @Override
     List<T> backer();
+    @Override
     String toString();
 
     static <T> SeqList<T> of(List<T> list) {

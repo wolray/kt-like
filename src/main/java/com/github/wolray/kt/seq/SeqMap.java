@@ -7,6 +7,7 @@ import java.util.*;
  */
 public interface SeqMap<K, V> extends Map<K, V>, Seq.Backed<Map.Entry<K, V>> {
     Map<K, V> map();
+    @Override
     String toString();
 
     static <K, V> SeqMap<K, V> of(Map<K, V> map) {

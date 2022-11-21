@@ -71,4 +71,19 @@ public class SeqTest {
         list.add(2, 10);
         list.assertTo(6, 2, 10, 3);
     }
+
+    @Test
+    public void testQueue() {
+        SinglyList<Integer> list = new SinglyList<>();
+        list.offer(2);
+        list.offer(3);
+        list.offer(4);
+        list.offer(5);
+        list.assertTo(2, 3, 4, 5);
+        assert list.size() == 4;
+        Integer head = list.remove();
+        assert head == 2;
+        assert list.size() == 3;
+        list.assertTo(3, 4, 5);
+    }
 }
