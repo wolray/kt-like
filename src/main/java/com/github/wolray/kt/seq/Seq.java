@@ -371,7 +371,7 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         }
 
         default void ifNotEmpty(Consumer<Seq<T>> consumer) {
-            if (isNotEmpty()) {
+            if (!backer().isEmpty()) {
                 consumer.accept(this);
             }
         }

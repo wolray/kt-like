@@ -1,12 +1,8 @@
 package com.github.wolray.kt.util;
 
-import com.github.wolray.kt.seq.Pair;
-import com.github.wolray.kt.seq.Seq;
-import com.github.wolray.kt.seq.Triple;
+import com.github.wolray.kt.seq.*;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
@@ -22,8 +18,16 @@ public class Iterables {
         return Seq.of(Arrays.asList(ts));
     }
 
-    public static <K, V> Seq<Map.Entry<K, V>> seq(Map<K, V> map) {
-        return Seq.of(map.entrySet());
+    public static <T> SeqList<T> seq(List<T> list) {
+        return SeqList.of(list);
+    }
+
+    public static <T> SeqSet<T> seq(Set<T> set) {
+        return SeqSet.of(set);
+    }
+
+    public static <K, V> SeqMap<K, V> seq(Map<K, V> map) {
+        return SeqMap.of(map);
     }
 
     public static <A, B> Seq<Pair<A, B>> zip(Iterable<A> as, Iterable<B> bs) {

@@ -8,8 +8,6 @@ import java.util.*;
 public interface SeqList<T> extends List<T>, Seq.Backed<T> {
     @Override
     List<T> backer();
-    @Override
-    String toString();
 
     static <T> SeqList<T> of(List<T> list) {
         return list instanceof SeqList ? (SeqList<T>)list : new SeqList<T>() {
