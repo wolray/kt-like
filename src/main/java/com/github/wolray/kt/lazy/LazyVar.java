@@ -59,11 +59,11 @@ public class LazyVar<T> implements Supplier<T> {
         return this;
     }
 
-    public <E> LazyVar<E> apply(Function<T, E> function) {
+    public <E> LazyVar<E> applyBy(Function<T, E> function) {
         return new LazyVar<>(() -> function.apply(get()));
     }
 
-    public <E> LazyVar<E> apply(Function<T, E> function, BiConsumer<E, T> consumer) {
+    public <E> LazyVar<E> applyBy(Function<T, E> function, BiConsumer<E, T> consumer) {
         return new LazyVar<>(() -> {
             T t = get();
             E e = function.apply(t);
