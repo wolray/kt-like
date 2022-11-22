@@ -1,9 +1,7 @@
 package com.github.wolray.kt.seq;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * @author wolray

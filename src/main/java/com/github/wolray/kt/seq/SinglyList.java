@@ -1,6 +1,8 @@
 package com.github.wolray.kt.seq;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 
 /**
  * @author wolray
