@@ -45,7 +45,6 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
         };
     }
 
-    
     @Override
     public boolean add(T t) {
         Node<T> it = new Node<>();
