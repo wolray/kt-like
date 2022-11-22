@@ -5,14 +5,14 @@ import java.util.*;
 /**
  * @author wolray
  */
-public class SinglyList<T> extends AbstractList<T> implements SeqList<T>, Queue<T> {
+public class SinglyList<T> implements AdderList<T>, Queue<T> {
     private transient Node<T> dummy = new Node<>();
     private transient Node<T> last = dummy;
     private transient int size = 0;
 
     @Override
-    public List<T> backer() {
-        return this;
+    public String toString() {
+        return toStr();
     }
 
     @Override
@@ -23,28 +23,6 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T>, Queue<
     @Override
     public int size() {
         return size;
-    }
-
-    @Override
-    public boolean add(T t) {
-        Node<T> it = new Node<>();
-        it.t = t;
-        last.next = it;
-        last = it;
-        size++;
-        return true;
-    }
-
-    @Override
-    public T get(int index) {
-        if (index >= size) {
-            throw new IndexOutOfBoundsException(String.format("%d >= %d", index, size));
-        }
-        Node<T> node = dummy;
-        for (int i = 0; i < index; i++) {
-            node = node.next;
-        }
-        return node.t;
     }
 
     @Override
@@ -65,6 +43,17 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T>, Queue<
         };
     }
 
+    
+    @Override
+    public boolean add(T t) {
+        Node<T> it = new Node<>();
+        it.t = t;
+        last.next = it;
+        last = it;
+        size++;
+        return true;
+    }
+
     @Override
     public void clear() {
         for (Node<T> node = dummy; node != null; ) {
@@ -74,6 +63,18 @@ public class SinglyList<T> extends AbstractList<T> implements SeqList<T>, Queue<
         }
         dummy = last = null;
         size = 0;
+    }
+
+    @Override
+    public T get(int index) {
+        if (index >= size) {
+            throw new IndexOutOfBoundsException(String.format("%d >= %d", index, size));
+        }
+        Node<T> node = dummy;
+        for (int i = 0; i < index; i++) {
+            node = node.next;
+        }
+        return node.t;
     }
 
     @Override

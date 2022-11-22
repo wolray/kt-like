@@ -138,6 +138,20 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return of(iterable);
     }
 
+    default boolean isEmpty() {
+        return !iterator().hasNext();
+    }
+
+    default boolean isNotEmpty() {
+        return !isEmpty();
+    }
+
+    default void ifNotEmpty(Consumer<Seq<T>> consumer) {
+        if (!isEmpty()) {
+            consumer.accept(this);
+        }
+    }
+
     default <E> Seq<E> recur(Function<Iterator<T>, E> function) {
         return gen(this::iterator, function);
     }
@@ -366,14 +380,9 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
             return boost instanceof Backed && n >= boost.sizeOrDefault();
         }
 
-        default boolean isNotEmpty() {
-            return !backer().isEmpty();
-        }
-
-        default void ifNotEmpty(Consumer<Seq<T>> consumer) {
-            if (!backer().isEmpty()) {
-                consumer.accept(this);
-            }
+        @Override
+        default boolean isEmpty() {
+            return backer().isEmpty();
         }
 
         @Override

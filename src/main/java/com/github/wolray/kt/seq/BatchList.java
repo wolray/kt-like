@@ -24,8 +24,18 @@ public class BatchList<T> extends AbstractList<T> implements SeqList<T> {
     }
 
     @Override
-    public List<T> backer() {
-        return this;
+    public String toString() {
+        return toStr();
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return PickItr.flat(list.iterator());
     }
 
     @Override
@@ -43,23 +53,14 @@ public class BatchList<T> extends AbstractList<T> implements SeqList<T> {
     }
 
     @Override
-    public T get(int index) {
-        return list.get(index / batchSize).get(index % batchSize);
-    }
-
-    @Override
-    public Iterator<T> iterator() {
-        return PickItr.flat(list.iterator());
-    }
-
-    @Override
     public void clear() {
         list.forEach(ArrayList::clear);
         list.clear();
+        size = 0;
     }
 
     @Override
-    public int size() {
-        return size;
+    public T get(int index) {
+        return list.get(index / batchSize).get(index % batchSize);
     }
 }
