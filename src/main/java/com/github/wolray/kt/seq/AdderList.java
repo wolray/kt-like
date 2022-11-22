@@ -1,19 +1,24 @@
 package com.github.wolray.kt.seq;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author wolray
  */
-public interface AdderList<E> extends List<E>, Seq<E> {
+public interface AdderList<E> extends List<E>, Seq.Backed<E> {
     default String toStr() {
         if (isEmpty()) {
             return "[]";
         }
         return '[' + join(", ", e -> e == this ? "(this)" : String.valueOf(e)) + ']';
+    }
+
+    @Override
+    Iterator<E> iterator();
+
+    @Override
+    default Collection<E> backer() {
+        return this;
     }
 
     @Override
