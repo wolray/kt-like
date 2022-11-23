@@ -72,7 +72,7 @@ public interface IterableBoost<T> extends Iterable<T> {
     }
 
     default SeqSet<T> toSet() {
-        return SeqSet.of(toCollection(new HashSet<>(sizeOrDefault())));
+        return SeqSet.of(toCollectionBy(HashSet::new));
     }
 
     default <E> SeqSet<E> toSet(Function<T, E> function) {
@@ -84,7 +84,7 @@ public interface IterableBoost<T> extends Iterable<T> {
             Collection<T> collection = ((Seq.Backed<T>)this).backer();
             return SeqList.of(new ArrayList<>(collection));
         }
-        return SeqList.of(toCollection(new ArrayList<>(sizeOrDefault())));
+        return SeqList.of(toCollectionBy(ArrayList::new));
     }
 
     default SinglyList<T> toSinglyList() {
@@ -101,6 +101,10 @@ public interface IterableBoost<T> extends Iterable<T> {
 
     default <C extends Collection<T>> C toCollection(C des) {
         return foldBy(des, Collection::add);
+    }
+
+    default <C extends Collection<T>> C toCollectionBy(IntFunction<C> bySize) {
+        return foldBy(bySize.apply(sizeOrDefault()), Collection::add);
     }
 
     default <E, C extends Collection<E>> C toCollection(C des, Function<T, E> function) {
