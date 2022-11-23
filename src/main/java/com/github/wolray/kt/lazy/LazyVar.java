@@ -1,5 +1,12 @@
 package com.github.wolray.kt.lazy;
 
+import com.github.wolray.kt.seq.SeqList;
+import com.github.wolray.kt.seq.SeqMap;
+import com.github.wolray.kt.seq.SeqSet;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -22,7 +29,7 @@ public class LazyVar<T> implements Supplier<T> {
     }
 
     public static <T> LazyVar<T> of(Supplier<T> supplier, Consumer<T> consumer) {
-        return new LazyVar<>(supplier).then(consumer);
+        return new LazyVar<>(supplier).afterInit(consumer);
     }
 
     public boolean isLoaded() {
@@ -54,9 +61,21 @@ public class LazyVar<T> implements Supplier<T> {
         value = null;
     }
 
-    public synchronized LazyVar<T> then(Consumer<T> consumer) {
+    public synchronized LazyVar<T> afterInit(Consumer<T> consumer) {
         after = after != null ? after.andThen(consumer) : consumer;
         return this;
+    }
+
+    public <E> LazyList<E> transformList(Function<T, List<E>> function) {
+        return new LazyList<>(() -> SeqList.of(function.apply(get())));
+    }
+
+    public <E> LazySet<E> transformSet(Function<T, Set<E>> function) {
+        return new LazySet<>(() -> SeqSet.of(function.apply(get())));
+    }
+
+    public <K, V> LazyMap<K, V> transformMap(Function<T, Map<K, V>> function) {
+        return new LazyMap<>(() -> SeqMap.of(function.apply(get())));
     }
 
     public <E> LazyVar<E> transform(Function<T, E> function) {

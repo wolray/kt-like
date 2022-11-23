@@ -15,7 +15,7 @@ public class Lazies {
     }
 
     public static <T> LazyVar<T> lazyOf(Supplier<T> supplier, Consumer<T> consumer) {
-        return new LazyVar<>(supplier).then(consumer);
+        return new LazyVar<>(supplier).afterInit(consumer);
     }
 
     public static LazyJob lazyJob(Runnable runnable) {
