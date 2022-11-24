@@ -8,8 +8,8 @@ import java.util.Queue;
  * @author wolray
  */
 public class SinglyList<T> implements AdderList<T>, Queue<T> {
-    private transient Node<T> dummy = new Node<>();
-    private transient Node<T> last = dummy;
+    private transient Node<T> head;
+    private transient Node<T> last;
     private transient int size = 0;
 
     @Override
@@ -19,7 +19,7 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
 
     @Override
     public boolean isEmpty() {
-        return dummy.next == null;
+        return head == null;
     }
 
     @Override
@@ -30,17 +30,18 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
     @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
-            Node<T> node = dummy;
+            Node<T> node = head;
 
             @Override
             public boolean hasNext() {
-                return node.next != null;
+                return node != null;
             }
 
             @Override
             public T next() {
+                Node<T> curr = node;
                 node = node.next;
-                return node.t;
+                return curr.t;
             }
         };
     }
@@ -49,7 +50,11 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
     public boolean add(T t) {
         Node<T> it = new Node<>();
         it.t = t;
-        last.next = it;
+        if (head != null) {
+            last.next = it;
+        } else {
+            head = it;
+        }
         last = it;
         size++;
         return true;
@@ -57,21 +62,21 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
 
     @Override
     public void clear() {
-        for (Node<T> node = dummy; node != null; ) {
+        for (Node<T> node = head; node != null; ) {
             Node<T> next = node.next;
             node.next = null;
             node = next;
         }
-        dummy = last = null;
+        head = last = null;
         size = 0;
     }
 
     @Override
     public T get(int index) {
         if (index >= size) {
-            throw new IndexOutOfBoundsException(String.format("%d >= %d", index, size));
+            throw new IndexOutOfBoundsException(String.format("%d, %d", index, size));
         }
-        Node<T> node = dummy;
+        Node<T> node = head;
         for (int i = 0; i < index; i++) {
             node = node.next;
         }
@@ -94,11 +99,11 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
 
     @Override
     public T poll() {
-        Node<T> first = dummy.next;
-        if (first == null) {
+        if (head == null) {
             return null;
         }
-        dummy.next = first.next;
+        Node<T> first = head;
+        head = first.next;
         first.next = null;
         size--;
         return first.t;
@@ -106,18 +111,16 @@ public class SinglyList<T> implements AdderList<T>, Queue<T> {
 
     @Override
     public T element() {
-        T t = peek();
-        if (t != null) {
-            return t;
+        if (head != null) {
+            return head.t;
         }
         throw new NoSuchElementException();
     }
 
     @Override
     public T peek() {
-        Node<T> first = dummy.next;
-        if (first != null) {
-            return first.t;
+        if (head != null) {
+            return head.t;
         }
         return null;
     }

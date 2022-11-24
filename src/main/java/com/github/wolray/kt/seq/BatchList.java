@@ -59,6 +59,9 @@ public class BatchList<T> implements AdderList<T> {
 
     @Override
     public T get(int index) {
+        if (index >= size) {
+            throw new IndexOutOfBoundsException(String.format("%d, %d", index, size));
+        }        
         return list.get(index / batchSize).get(index % batchSize);
     }
 }
