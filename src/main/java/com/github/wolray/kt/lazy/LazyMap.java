@@ -8,8 +8,8 @@ import java.util.function.Supplier;
 /**
  * @author wolray
  */
-public class LazyMap<K, V> extends LazyVar<SeqMap<K, V>> implements SeqMap<K, V> {
-    public LazyMap(Supplier<SeqMap<K, V>> supplier) {
+public class LazyMap<K, V> extends LazyVar<Map<K, V>> implements SeqMap<K, V> {
+    public LazyMap(Supplier<Map<K, V>> supplier) {
         super(supplier);
     }
 

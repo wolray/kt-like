@@ -8,8 +8,8 @@ import java.util.function.Supplier;
 /**
  * @author wolray
  */
-public class LazyList<T> extends LazyVar<SeqList<T>> implements SeqList<T> {
-    public LazyList(Supplier<SeqList<T>> supplier) {
+public class LazyList<T> extends LazyVar<List<T>> implements SeqList<T> {
+    public LazyList(Supplier<List<T>> supplier) {
         super(supplier);
     }
 

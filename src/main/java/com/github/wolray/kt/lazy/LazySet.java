@@ -8,8 +8,8 @@ import java.util.function.Supplier;
 /**
  * @author wolray
  */
-public class LazySet<T> extends LazyVar<SeqSet<T>> implements SeqSet<T> {
-    public LazySet(Supplier<SeqSet<T>> supplier) {
+public class LazySet<T> extends LazyVar<Set<T>> implements SeqSet<T> {
+    public LazySet(Supplier<Set<T>> supplier) {
         super(supplier);
     }
 
