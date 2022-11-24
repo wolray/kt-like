@@ -221,6 +221,14 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
         return filterNot(collection::contains);
     }
 
+    default Seq<T> filterIn(Map<T, ?> map) {
+        return filter(map::containsKey);
+    }
+
+    default Seq<T> filterNotIn(Map<T, ?> map) {
+        return filterNot(map::containsKey);
+    }
+
     default Seq<T> distinct() {
         return distinctBy(it -> it);
     }
@@ -317,7 +325,11 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default Seq<IntPair<T>> withIndex() {
-        return () -> MapItr.of(iterator(), new int[1], (t, a) -> new IntPair<>(t, a[0]++));
+        return withIndex(0);
+    }
+
+    default Seq<IntPair<T>> withIndex(int start) {
+        return () -> MapItr.of(iterator(), new int[]{start}, (t, a) -> new IntPair<>(t, a[0]++));
     }
 
     default <B> Seq<Pair<T, B>> zip(Iterable<B> bs) {
