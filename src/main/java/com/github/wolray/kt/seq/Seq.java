@@ -270,29 +270,29 @@ public interface Seq<T> extends IterableBoost<T>, Self<Seq<T>>, Cache.Cacheable<
     }
 
     default SeqList<T> sort() {
-        return sortOf(null);
+        return sortOn(null);
     }
 
-    default SeqList<T> sortOf(Comparator<T> comparator) {
+    default SeqList<T> sortOn(Comparator<T> comparator) {
         SeqList<T> list = toList();
         list.backer().sort(comparator);
         return list;
     }
 
     default SeqList<T> sortDesc() {
-        return sortOf(Collections.reverseOrder());
+        return sortOn(Collections.reverseOrder());
     }
 
     default SeqList<T> sortDesc(Comparator<T> comparator) {
-        return sortOf(comparator.reversed());
+        return sortOn(comparator.reversed());
     }
 
     default <E extends Comparable<E>> SeqList<T> sortBy(Function<T, E> function) {
-        return sortOf(Comparator.comparing(function));
+        return sortOn(Comparator.comparing(function));
     }
 
     default <E extends Comparable<E>> SeqList<T> sortDescBy(Function<T, E> function) {
-        return sortOf(Comparator.comparing(function).reversed());
+        return sortOn(Comparator.comparing(function).reversed());
     }
 
     default <E extends Comparable<E>> SeqList<Pair<T, E>> sortWith(Function<T, E> function) {
