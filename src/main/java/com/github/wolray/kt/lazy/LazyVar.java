@@ -1,9 +1,5 @@
 package com.github.wolray.kt.lazy;
 
-import com.github.wolray.kt.seq.SeqList;
-import com.github.wolray.kt.seq.SeqMap;
-import com.github.wolray.kt.seq.SeqSet;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
